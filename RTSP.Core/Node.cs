@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RTSP
+namespace RTSP.Core
 {
     public abstract class Node
     {

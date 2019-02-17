@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RTSP\RTSP.csproj">
+    <ProjectReference Include="..\RTSP.Core\RTSP.Core.csproj">
       <Project>{8653a255-b83d-4621-b25f-703a43c6eec9}</Project>
-      <Name>RTSP</Name>
+      <Name>RTSP.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
