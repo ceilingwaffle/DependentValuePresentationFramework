@@ -32,11 +32,9 @@ namespace RTSP.Core
 
                 MasterNodes[node.GetType()] = node;
             }
-
-            _BuildLeafNodes();
         }
 
-        private void _BuildLeafNodes()
+        internal void BuildLeafNodes()
         {
             // TODO: replace all these uses of Select with a custom Class for Dictionary<Type, Node> with a GetNodes() method
             var masterNodesList = MasterNodes.ToList().Select((n) => { return n.Value; });

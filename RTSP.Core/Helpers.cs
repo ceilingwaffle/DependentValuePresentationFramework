@@ -13,4 +13,11 @@ namespace RTSP.Core
             return (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
     }
+
+    internal enum LogCategory
+    {
+        Event,
+        ValueChanged,
+
+    }
 }

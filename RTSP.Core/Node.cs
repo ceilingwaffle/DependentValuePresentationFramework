@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -50,27 +51,30 @@ namespace RTSP.Core
         {
             await GetUpdateTask();
 
-            Console.WriteLine($"Node._updateTask.Status = {_updateTask.Status.ToString()} ({this.GetType().ToString()}).");
+            Debug.WriteLine($"{T()}_updateTask.S = {_updateTask.Status.ToString()}.");
 
             this.DisposeUpdateTask();
         }
 
         private Task GetUpdateTask()
         {
+                Debug.WriteLineIf(_updateTask != null, $"{T()}_updateTask already running.");
+
             if (_updateTask == null)
             {
+                //_ResetValue();
+
                 var cts = new CancellationTokenSource(_updateTimeLimit);
 
-                _updateTask = Task.Run(() =>
+                _updateTask = Task.Run(async () =>
                 {
-                    Console.WriteLine($"TODO: FetchData() + CalculateValue() ({this.GetType().ToString()}).");
-
-                    _SetValue(Helpers.UnixTimestamp());
+                    Debug.WriteLine($"{T()} FetchData().", LogCategory.Event, this);
+                    await Task.Delay(TimeSpan.FromMilliseconds(500));
 
                     if (_ValueChanged())
                     {
                         // TODO: Issue cancel to all children (if IsCancelled -> DisposeUpdateTask())
-                        Console.WriteLine($"Value changed ({this.GetType().ToString()}) ({GetPreviousValue()} -> {GetValue()}).");
+                        Debug.WriteLine($"{T()} Value changed: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
                     }
 
                     var parents = Parents.ToList().Select((n) => { return n.Value; });
@@ -78,6 +82,9 @@ namespace RTSP.Core
                     {
                         await parent.GetUpdateTask();
                     });
+
+                    Debug.WriteLine($"{T()} CalculateValue().");
+                    _SetValue(Helpers.UnixTimestamp());
 
                 }, cts.Token);
             }
@@ -98,13 +105,27 @@ namespace RTSP.Core
 
         internal void DisposeUpdateTask()
         {
-            Console.WriteLine($"DisposeUpdateTask() for {this.GetType().ToString()}.");
+            Debug.WriteLine($"{T()} DisposeUpdateTask().");
             _updateTask = null;
         }
 
+        /// <summary>
+        /// Insert at index 0 on ledger.
+        /// If the given value is null, set value at index 0 to null without modifying the previous value.
+        /// </summary>
+        /// <param name="v"></param>
         private void _SetValue(object v)
         {
+            if (v == null)
+            {
+                _valueLedger.RemoveAt(0);
+                _valueLedger.Insert(0, null);
+                Debug.WriteLine($"{T()} Value set to NULL.");
+                return;
+            }
+
             _valueLedger.Insert(0, v);
+            Debug.WriteLine($"{T()} Value set to {v}.");
         }
 
         public object GetValue()
@@ -127,9 +148,33 @@ namespace RTSP.Core
             return _valueLedger.ElementAt(age);
         }
 
+        /// <summary>
+        /// Set index 0 of ledger to null
+        /// </summary>
+        private void _ResetValue()
+        {
+            if (GetValue() != null)
+            {
+                _SetValue(null);
+            }
+        }
+
         private bool _ValueChanged()
         {
-            return ! GetPreviousValue(age: 0).Equals(GetPreviousValue(age: 1));
+            var current = GetPreviousValue(age: 0);
+            var previous = GetPreviousValue(age: 1);
+
+            if (current == null)
+                return false;
+
+            return !current.Equals(previous);
         }
+
+#if DEBUG
+        internal string T()
+        {
+            return this.GetType().ToString().PadRight(30);
+        }
+#endif
     }
 }
