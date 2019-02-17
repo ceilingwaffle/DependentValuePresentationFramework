@@ -19,8 +19,6 @@ namespace RTSP.Core
 
         public async Task StartAsync()
         {
-            NodeSupervisor.BuildLeafNodes();
-
             var cts = new CancellationTokenSource();
 
             while (true)
