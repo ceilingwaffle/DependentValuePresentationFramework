@@ -14,6 +14,7 @@ namespace RTSP.Core
         private LinkedList<object> _valueLedger;
 
         private Task _updateTask;
+        private CancellationTokenSource _updateTaskCTS;
         private TimeSpan _updateTimeLimit = TimeSpan.FromSeconds(30);
 
         public Dictionary<Type, Node> Children { get; }
@@ -21,10 +22,19 @@ namespace RTSP.Core
 
         public Node()
         {
+            _ResetUpdateTaskCTS();
             _InitValueLedger();
-
             Children = new Dictionary<Type, Node>();
             Parents = new Dictionary<Type, Node>();
+        }
+
+        private void _ResetUpdateTaskCTS()
+        {
+            if (_updateTaskCTS != null)
+                _updateTaskCTS.Dispose();
+
+            _updateTaskCTS = new CancellationTokenSource();
+            Debug.WriteLine($"{T()} _ResetUpdateTaskCTS().");
         }
 
         private void _InitValueLedger()
@@ -61,9 +71,17 @@ namespace RTSP.Core
 
         internal async Task UpdateAsync()
         {
-            await GetUpdateTask();
+            try
+            {
+                await GetUpdateTask();
+            }
+            catch (TaskCanceledException tce)
+            {
+                Console.WriteLine(tce.Message);
+            }
 
-            this.DisposeUpdateTask();
+            _DisposeUpdateTask();
+            _ResetUpdateTaskCTS();
         }
 
         private Task GetUpdateTask()
@@ -74,10 +92,6 @@ namespace RTSP.Core
 
             if (_updateTask == null)
             {
-                //_ResetValue();
-
-                var cts = new CancellationTokenSource(_updateTimeLimit);
-
                 _updateTask = Task.Run(async () =>
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(800));
@@ -98,7 +112,16 @@ namespace RTSP.Core
 
                     if (_ValueChanged())
                     {
-                        // TODO: Issue cancel to all children (if IsCancelled -> DisposeUpdateTask())
+                        // This Node's value changed, meaning all child node values are now potentially expired.
+                        // So issue a cancel to all child update tasks.
+                        var children = Children.ToList().Select((n) => { return n.Value; });
+                        foreach (var child in children)
+                        {
+                            Debug.WriteLine($"{T()} Issuing cancel to child {child.T()}...");
+                            child._updateTaskCTS.Cancel();
+                        }
+
+
                         Debug.WriteLine($"{T()} Value changed: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
                     }
                     else
@@ -106,7 +129,7 @@ namespace RTSP.Core
                         Debug.WriteLine($"{T()} Value was same: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
                     }
 
-                }, cts.Token);
+                }, _updateTaskCTS.Token);
             }
 
             return _updateTask;
@@ -123,12 +146,12 @@ namespace RTSP.Core
             return _updateTask.Status;
         }
 
-        internal void DisposeUpdateTask()
+        private void _DisposeUpdateTask()
         {
             if (_updateTask != null)
             {
                 _updateTask = null;
-                Debug.WriteLine($"{T()} DisposeUpdateTask().");
+                Debug.WriteLine($"{T()} _DisposeUpdateTask().");
             }
         }
 
