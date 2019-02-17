@@ -10,7 +10,8 @@ namespace RTSP.Core
 {
     public abstract class Node
     {
-        private List<object> _valueLedger;
+        private readonly object valueLock = new object();
+        private LinkedList<object> _valueLedger;
 
         private Task _updateTask;
         private TimeSpan _updateTimeLimit = TimeSpan.FromSeconds(30);
@@ -20,9 +21,20 @@ namespace RTSP.Core
 
         public Node()
         {
-            _valueLedger = new List<object>(2);
+            _InitValueLedger();
+
             Children = new Dictionary<Type, Node>();
             Parents = new Dictionary<Type, Node>();
+        }
+
+        private void _InitValueLedger()
+        {
+            var capacity = 2;
+
+            _valueLedger = new LinkedList<object>();
+
+            for (var i = 0; i < capacity; i++)
+                _valueLedger.AddFirst(new LinkedListNode<object>(null));
         }
 
         public void AddChildren(params Node[] nodes)
@@ -51,14 +63,14 @@ namespace RTSP.Core
         {
             await GetUpdateTask();
 
-            Debug.WriteLine($"{T()}_updateTask.S = {_updateTask.Status.ToString()}.");
-
             this.DisposeUpdateTask();
         }
 
         private Task GetUpdateTask()
         {
-                Debug.WriteLineIf(_updateTask != null, $"{T()}_updateTask already running.");
+            Debug.WriteLineIf(
+                _updateTask != null || _updateTask?.Status == TaskStatus.Running,
+                $"{T()}_updateTask already running.");
 
             if (_updateTask == null)
             {
@@ -68,23 +80,31 @@ namespace RTSP.Core
 
                 _updateTask = Task.Run(async () =>
                 {
-                    Debug.WriteLine($"{T()} FetchData().", LogCategory.Event, this);
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    await Task.Delay(TimeSpan.FromMilliseconds(800));
+                    var fetchedDataTs = Helpers.UnixTimestamp();
+                    Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
+
+                    var parents = Parents.ToList().Select((n) => { return n.Value; });
+                    foreach (var parent in parents)
+                    {
+                        await parent.UpdateAsync();
+                    }
+
+                    await Task.Delay(TimeSpan.FromMilliseconds(200));
+                    var calculatedValue = Helpers.UnixTimestamp() - fetchedDataTs;
+                    //_SetValue(calculatedValue);
+                    _SetValue(Helpers.Rand(1,2));
+                    Debug.WriteLine($"{T()} Completed: CalculateValue(fetchedData).", LogCategory.Event, this);
 
                     if (_ValueChanged())
                     {
                         // TODO: Issue cancel to all children (if IsCancelled -> DisposeUpdateTask())
                         Debug.WriteLine($"{T()} Value changed: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
                     }
-
-                    var parents = Parents.ToList().Select((n) => { return n.Value; });
-                    Parallel.ForEach(parents, async parent =>
+                    else
                     {
-                        await parent.GetUpdateTask();
-                    });
-
-                    Debug.WriteLine($"{T()} CalculateValue().");
-                    _SetValue(Helpers.UnixTimestamp());
+                        Debug.WriteLine($"{T()} Value was same: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
+                    }
 
                 }, cts.Token);
             }
@@ -105,8 +125,11 @@ namespace RTSP.Core
 
         internal void DisposeUpdateTask()
         {
-            Debug.WriteLine($"{T()} DisposeUpdateTask().");
-            _updateTask = null;
+            if (_updateTask != null)
+            {
+                _updateTask = null;
+                Debug.WriteLine($"{T()} DisposeUpdateTask().");
+            }
         }
 
         /// <summary>
@@ -114,18 +137,28 @@ namespace RTSP.Core
         /// If the given value is null, set value at index 0 to null without modifying the previous value.
         /// </summary>
         /// <param name="v"></param>
-        private void _SetValue(object v)
+        private bool _SetValue(object v)
         {
-            if (v == null)
+            lock (valueLock)
             {
-                _valueLedger.RemoveAt(0);
-                _valueLedger.Insert(0, null);
-                Debug.WriteLine($"{T()} Value set to NULL.");
-                return;
+                var capacity = 2;
+
+                if (v == null)
+                {
+                    _valueLedger.AddFirst(new LinkedListNode<object>(null));
+                    Debug.WriteLine($"{T()} Value set to NULL.");
+                    return false;
+                }
+
+                _valueLedger.AddFirst(v);
+
+                while (_valueLedger.Count > capacity)
+                    _valueLedger.RemoveLast();
+
+                Debug.WriteLine($"{T()} Value set to {v} (ledger count {_valueLedger.Count}).");
+                return true;
             }
 
-            _valueLedger.Insert(0, v);
-            Debug.WriteLine($"{T()} Value set to {v}.");
         }
 
         public object GetValue()
@@ -140,11 +173,6 @@ namespace RTSP.Core
 
         internal object GetPreviousValue(int age)
         {
-            if (_valueLedger.Count <= age)
-            {
-                return default(object);
-            }
-
             return _valueLedger.ElementAt(age);
         }
 
@@ -165,6 +193,9 @@ namespace RTSP.Core
             var previous = GetPreviousValue(age: 1);
 
             if (current == null)
+                return false;
+
+            if (current == null && previous == null)
                 return false;
 
             return !current.Equals(previous);
