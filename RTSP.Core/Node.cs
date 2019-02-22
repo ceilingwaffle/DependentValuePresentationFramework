@@ -73,11 +73,21 @@ namespace RTSP.Core
         {
             try
             {
-                await GetUpdateTask();
+                var updateTask = GetUpdateTask();
+
+                if (updateTask.IsCanceled)
+                    return;
+
+                await updateTask;
             }
             catch (TaskCanceledException tce)
             {
+                // TODO: This doesn't work. Exception is still thrown.
                 Console.WriteLine(tce.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
 
             _DisposeUpdateTask();
@@ -94,6 +104,13 @@ namespace RTSP.Core
             {
                 _updateTask = Task.Run(async () =>
                 {
+                    if (_updateTaskCTS.IsCancellationRequested)
+                    {
+                        Debug.WriteLine($"{T()} Cancellation was requested. Not continuing with calc/data fetching.", LogCategory.Event, this);
+                        //_ResetUpdateTaskCTS();
+                        return;
+                    }
+
                     await Task.Delay(TimeSpan.FromMilliseconds(800));
                     var fetchedDataTs = Helpers.UnixTimestamp();
                     Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
@@ -107,7 +124,7 @@ namespace RTSP.Core
                     await Task.Delay(TimeSpan.FromMilliseconds(200));
                     var calculatedValue = Helpers.UnixTimestamp() - fetchedDataTs;
                     //_SetValue(calculatedValue);
-                    _SetValue(Helpers.Rand(1,2));
+                    _SetValue(Helpers.Rand(1, 2));
                     Debug.WriteLine($"{T()} Completed: CalculateValue(fetchedData).", LogCategory.Event, this);
 
                     if (_ValueChanged())
@@ -225,6 +242,11 @@ namespace RTSP.Core
         }
 
 #if DEBUG
+        internal string T()
+        {
+            return this.GetType().ToString().PadRight(30);
+        }
+#else
         internal string T()
         {
             return this.GetType().ToString().PadRight(30);
