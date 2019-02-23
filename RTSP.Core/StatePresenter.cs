@@ -11,7 +11,7 @@ namespace RTSP.Core
     public class StatePresenter
     {
         public NodeSupervisor NodeSupervisor { get; private set; }
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(1);
+        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(1000);
 
         public StatePresenter()
         {
@@ -35,13 +35,10 @@ namespace RTSP.Core
 
                 foreach (var node in leafNodes)
                 {
-                    // TODO
-
                     if (node.GetUpdateTaskStatus() != TaskStatus.Running)
                     {
                         Debug.WriteLine($"{node.T()} UpdateAsync() START...");
-                        //Task.Run(async () => { await node.UpdateAsync(); });
-                        node.UpdateAsync();
+                        node.UpdateAsync().ConfigureAwait(false);
                     }
                     else
                     {

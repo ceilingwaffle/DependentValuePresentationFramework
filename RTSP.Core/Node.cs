@@ -15,7 +15,7 @@ namespace RTSP.Core
 
         private Task _updateTask;
         private CancellationTokenSource _updateTaskCTS;
-        private TimeSpan _updateTimeLimit = TimeSpan.FromSeconds(30);
+        private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
 
         public Dictionary<Type, Node> Children { get; }
         public Dictionary<Type, Node> Parents { get; }
@@ -71,34 +71,30 @@ namespace RTSP.Core
 
         internal async Task UpdateAsync()
         {
-            try
-            {
-                var updateTask = GetUpdateTask();
+            var updateTask = GetUpdateTask();
 
-                if (updateTask.IsCanceled)
-                    return;
-
-                await updateTask;
-            }
-            catch (TaskCanceledException tce)
+            if (updateTask.IsCanceled)
             {
-                // TODO: This doesn't work. Exception is still thrown.
-                Console.WriteLine(tce.Message);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
+                Debug.WriteLine($"{T()} task is cancelled");
+                return;
             }
 
-            _DisposeUpdateTask();
-            _ResetUpdateTaskCTS();
+            await updateTask.ConfigureAwait(false);
+
+            if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
+            {
+                _DisposeUpdateTask();
+                _ResetUpdateTaskCTS();
+            }
         }
 
         private Task GetUpdateTask()
         {
-            Debug.WriteLineIf(
-                _updateTask != null || _updateTask?.Status == TaskStatus.Running,
-                $"{T()}_updateTask already running.");
+            Debug.WriteLineIf(_updateTask != null,
+                $"{T()}_updateTask already running (_updateTask != null).");
+
+            Debug.WriteLineIf(_updateTask?.Status == TaskStatus.Running,
+                $"{T()}_updateTask already running (_updateTask?.Status == TaskStatus.Running).");
 
             if (_updateTask == null)
             {
@@ -107,7 +103,6 @@ namespace RTSP.Core
                     if (_updateTaskCTS.IsCancellationRequested)
                     {
                         Debug.WriteLine($"{T()} Cancellation was requested. Not continuing with calc/data fetching.", LogCategory.Event, this);
-                        //_ResetUpdateTaskCTS();
                         return;
                     }
 
@@ -118,7 +113,7 @@ namespace RTSP.Core
                     var parents = Parents.ToList().Select((n) => { return n.Value; });
                     foreach (var parent in parents)
                     {
-                        await parent.UpdateAsync();
+                        await parent.UpdateAsync().ConfigureAwait(false);
                     }
 
                     await Task.Delay(TimeSpan.FromMilliseconds(200));
