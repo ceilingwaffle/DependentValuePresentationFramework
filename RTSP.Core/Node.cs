@@ -10,7 +10,7 @@ namespace RTSP.Core
 {
     public abstract class Node
     {
-        private readonly object valueLock = new object();
+        private readonly object _valueLock = new object();
         private LinkedList<object> _valueLedger;
 
         private Task _updateTask;
@@ -59,12 +59,12 @@ namespace RTSP.Core
             }
         }
 
-        internal bool HasChildren()
+        public bool HasChildren()
         {
             return Children.Count() > 0;
         }
 
-        internal bool HasParents()
+        public bool HasParents()
         {
             return Parents.Count() > 0;
         }
@@ -174,7 +174,7 @@ namespace RTSP.Core
         /// <param name="v"></param>
         private bool _SetValue(object v)
         {
-            lock (valueLock)
+            lock (_valueLock)
             {
                 var capacity = 2;
 

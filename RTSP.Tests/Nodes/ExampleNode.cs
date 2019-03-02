@@ -1,0 +1,17 @@
+﻿using RTSP.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTSP.Tests.Nodes
+{
+    internal class ExampleNode : Node
+    {
+        public ExampleNode()
+        {
+
+        }
+    }
+}

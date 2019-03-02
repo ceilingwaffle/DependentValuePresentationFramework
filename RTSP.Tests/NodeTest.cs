@@ -3,6 +3,7 @@
     using System;
     using NUnit.Framework;
     using RTSP.Core;
+    using RTSP.Tests.Nodes;
 
     [TestFixture]
     public class NodeTest
@@ -24,7 +25,7 @@
         }
 
         [TearDown]
-        public void CleanUp()
+        protected void CleanUp()
         {
 
         }
@@ -55,15 +56,20 @@
             Assert.AreSame(parentOfChild, parentNode);
         }
 
+        [Test]
+        public void TestHasChildrenMethod()
+        {
+            var parentNode = new TestParentNode();
+
+            Assert.IsFalse(parentNode.HasChildren());
+
+            var childNode = new TestChildNode();
+            parentNode.AddChildren(childNode);
+
+            Assert.IsTrue(parentNode.HasChildren());
+        }
+
     }
 
-    class TestParentNode : Node
-    {
 
-    }
-
-    class TestChildNode : Node
-    {
-
-    }
 }

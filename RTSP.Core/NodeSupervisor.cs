@@ -37,34 +37,34 @@ namespace RTSP.Core
         internal void BuildLeafNodes()
         {
             // TODO: replace all these uses of Select with a custom Class for Dictionary<Type, Node> with a GetNodes() method
-            var masterNodesList = RootNodes.ToList().Select((n) => { return n.Value; });
+            var rootNodesList = RootNodes.ToList().Select((n) => { return n.Value; });
 
-            LeafNodes = RecursiveChildLeafGet(masterNodesList);
+            LeafNodes = CollectLeafNodes(rootNodesList);
         }
 
-        private NodeCollection RecursiveChildLeafGet(IEnumerable<Node> nodes)
+        private NodeCollection CollectLeafNodes(IEnumerable<Node> nodes)
         {
-            var leafs = new NodeCollection();
+            var leaves = new NodeCollection();
 
             // TODO: Replace recursion with while loop or task? Possible stack overflow exception...
             foreach (var node in nodes)
             {
                 if (! node.HasChildren())
                 {
-                    leafs.Add(node);
+                    leaves.Add(node);
                 }
                 else
                 {
                     var children = node.Children.ToList().Select((n) => { return n.Value; });
-                    var childrenLeafs = RecursiveChildLeafGet(children);
+                    var childrenLeafs = CollectLeafNodes(children);
 
                     // merge
-                    childrenLeafs.ToList().ForEach(n => leafs.Add(n.Value));
+                    childrenLeafs.ToList().ForEach(n => leaves.Add(n.Value));
                 }
 
             }
 
-            return leafs;
+            return leaves;
         }
 
 
