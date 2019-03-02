@@ -18,8 +18,8 @@
         [SetUp]
         protected void SetUp()
         {
-            parentNode = new TestParentNode();
-            childNode = new TestChildNode();
+            parentNode = new MilkyWay();
+            childNode = new SolarSystem();
 
             parentNode.AddChildren(childNode);
         }
@@ -38,7 +38,7 @@
         {
             var childrenOfParents = parentNode.Children;
             Assert.IsNotNull(childrenOfParents);
-            var parentHasChild = childrenOfParents.TryGetValue(typeof(TestChildNode), out var childOfParent);
+            var parentHasChild = childrenOfParents.TryGetValue(typeof(SolarSystem), out var childOfParent);
             Assert.IsTrue(parentHasChild);
             Assert.AreSame(childOfParent, childNode);
         }
@@ -51,7 +51,7 @@
         {
             var parentsOfChild = childNode.Parents;
             Assert.IsNotNull(parentsOfChild);
-            var childHasParent = parentsOfChild.TryGetValue(typeof(TestParentNode), out var parentOfChild);
+            var childHasParent = parentsOfChild.TryGetValue(typeof(MilkyWay), out var parentOfChild);
             Assert.IsTrue(childHasParent);
             Assert.AreSame(parentOfChild, parentNode);
         }
@@ -59,11 +59,11 @@
         [Test]
         public void TestHasChildrenMethod()
         {
-            var parentNode = new TestParentNode();
+            var parentNode = new MilkyWay();
 
             Assert.IsFalse(parentNode.HasChildren());
 
-            var childNode = new TestChildNode();
+            var childNode = new SolarSystem();
             parentNode.AddChildren(childNode);
 
             Assert.IsTrue(parentNode.HasChildren());

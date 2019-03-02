@@ -34,24 +34,29 @@
             Assert.AreEqual(_nodeCollection.Count(), 0);
 
             // test 1 nodes added
-            var node1 = new ExampleNode();
-            _nodeCollection.Add(node1);
+            var lmc = new LMC();
+            _nodeCollection.Add(lmc);
             Assert.AreEqual(_nodeCollection.Count(), 1);
 
             // test 2 nodes added
-            var node2 = new TestParentNode();
-            _nodeCollection.Add(node2);
+            var milkyWay = new MilkyWay();
+            _nodeCollection.Add(milkyWay);
+            Assert.AreEqual(_nodeCollection.Count(), 2);
+
+            // adding child should not increase collection count
+            var solarSystem = new SolarSystem();
+            milkyWay.AddChildren(solarSystem);
             Assert.AreEqual(_nodeCollection.Count(), 2);
         }
 
         [Test]
         public void TestNodeOfSameTypeNotAddedTwice()
         {
-            var node1 = new ExampleNode();
+            var milkyWay = new MilkyWay();
             Assert.AreEqual(_nodeCollection.Count(), 0);
-            _nodeCollection.Add(node1);
+            _nodeCollection.Add(milkyWay);
             Assert.AreEqual(_nodeCollection.Count(), 1);
-            _nodeCollection.Add(node1);
+            _nodeCollection.Add(milkyWay);
             Assert.AreEqual(_nodeCollection.Count(), 1);
         }
     }

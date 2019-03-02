@@ -54,9 +54,15 @@
   <ItemGroup>
     <Compile Include="NodeSupervisorTest.cs" />
     <Compile Include="NodeCollectionTest.cs" />
-    <Compile Include="Nodes\TestChildNode.cs" />
-    <Compile Include="Nodes\TestParentNode.cs" />
-    <Compile Include="Nodes\ExampleNode.cs" />
+    <Compile Include="Nodes\MilkyWay.cs" />
+    <Compile Include="Nodes\Andromeda.cs" />
+    <Compile Include="Nodes\Earth.cs" />
+    <Compile Include="Nodes\Jupiter.cs" />
+    <Compile Include="Nodes\Oumuamua.cs" />
+    <Compile Include="Nodes\Sun.cs" />
+    <Compile Include="Nodes\SolarSystem.cs" />
+    <Compile Include="Nodes\HalleysComet.cs" />
+    <Compile Include="Nodes\LMC.cs" />
     <Compile Include="NodeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -7,11 +7,7 @@ using System.Threading.Tasks;
 
 namespace RTSP.Tests.Nodes
 {
-    internal class ExampleNode : Node
+    class Earth : Node
     {
-        public ExampleNode()
-        {
-
-        }
     }
 }

@@ -7,11 +7,7 @@ using System.Threading.Tasks;
 
 namespace RTSP.Tests.Nodes
 {
-    internal class TestParentNode : Node
+    class Oumuamua : Node
     {
-        public TestParentNode()
-        {
-
-        }
     }
 }
