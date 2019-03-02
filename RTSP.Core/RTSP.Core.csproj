@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Helpers.cs" />
     <Compile Include="Node.cs" />
+    <Compile Include="NodeCollection.cs" />
     <Compile Include="NodeSupervisor.cs" />
     <Compile Include="StatePresenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

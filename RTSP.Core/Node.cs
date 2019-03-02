@@ -17,15 +17,15 @@ namespace RTSP.Core
         private CancellationTokenSource _updateTaskCTS;
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
 
-        public Dictionary<Type, Node> Children { get; }
-        public Dictionary<Type, Node> Parents { get; }
+        public NodeCollection Children { get; }
+        public NodeCollection Parents { get; }
 
         public Node()
         {
             _ResetUpdateTaskCTS();
             _InitValueLedger();
-            Children = new Dictionary<Type, Node>();
-            Parents = new Dictionary<Type, Node>();
+            Children = new NodeCollection();
+            Parents = new NodeCollection();
         }
 
         private void _ResetUpdateTaskCTS()
@@ -54,19 +54,19 @@ namespace RTSP.Core
                 if (node == null)
                     throw new ArgumentNullException(node.GetType().ToString());
 
-                Children[node.GetType()] = node;
-                node.Parents[this.GetType()] = this;
+                Children.Add(node);
+                node.Parents.Add(this);
             }
         }
 
         internal bool HasChildren()
         {
-            return Children.Count > 0;
+            return Children.Count() > 0;
         }
 
         internal bool HasParents()
         {
-            return Parents.Count > 0;
+            return Parents.Count() > 0;
         }
 
         internal async Task UpdateAsync()
