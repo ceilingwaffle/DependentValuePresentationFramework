@@ -106,6 +106,7 @@ namespace RTSP.Core
                         return;
                     }
 
+                    Debug.WriteLine($"{T()} Fetching data...", LogCategory.Event, this);
                     await Task.Delay(TimeSpan.FromMilliseconds(800));
                     var fetchedDataTs = Helpers.UnixTimestamp();
                     Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);

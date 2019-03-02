@@ -11,7 +11,7 @@ namespace RTSP.Core
     public class StatePresenter
     {
         public NodeSupervisor NodeSupervisor { get; private set; }
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(1000);
+        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(500);
 
         public StatePresenter()
         {
