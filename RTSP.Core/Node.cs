@@ -115,7 +115,8 @@ namespace RTSP.Core
                     var fetchedDataTs = Helpers.UnixTimestamp();
                     Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
 
-                    var parents = Parents.ToList().Select((n) => { return n.Value; });
+                    var parents = Parents.ToEnumerable();
+
                     foreach (var parent in parents)
                     {
                         await parent.UpdateAsync().ConfigureAwait(false);
@@ -131,13 +132,12 @@ namespace RTSP.Core
                     {
                         // This Node's value changed, meaning all child node values are now potentially expired.
                         // So issue a cancel to all child update tasks.
-                        var children = Children.ToList().Select((n) => { return n.Value; });
+                        var children = Children.ToEnumerable();
                         foreach (var child in children)
                         {
                             Debug.WriteLine($"{T()} Issuing cancel to child {child.T()}...");
                             child._updateTaskCTS.Cancel();
                         }
-
 
                         Debug.WriteLine($"{T()} Value changed: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
                     }

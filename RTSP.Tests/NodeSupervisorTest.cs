@@ -63,7 +63,7 @@ namespace RTSP.Tests
             NodeSupervisor target = _nodeSupervisor;
             PrivateObject obj = new PrivateObject(target);
             var RootNodes = new NodeCollection(LMC, MilkyWay, Andromeda);
-            var rootNodesList = RootNodes.ToList().Select((n) => { return n.Value; });
+            var rootNodesList = RootNodes.ToEnumerable();
             var returnedLeaves = (NodeCollection)obj.Invoke("CollectLeafNodes", rootNodesList);
 
             CollectionAssert.AreNotEquivalent(returnedLeaves.ToList(), emptyCollection.ToList());
@@ -80,7 +80,7 @@ namespace RTSP.Tests
             {
                 var dynamicNodes = new List<Node>();
 
-                for (int i = 0; i < 10000; i++)
+                for (int i = 0; i < 20000; i++)
                 {
                     Node n = CreateDynamicNode();
                     dynamicNodes.Add(n);
@@ -99,7 +99,7 @@ namespace RTSP.Tests
                 NodeSupervisor target = _nodeSupervisor;
                 PrivateObject obj = new PrivateObject(target);
                 var RootNodes = new NodeCollection(rootNode);
-                var rootNodesList = RootNodes.ToList().Select((n) => { return n.Value; });
+                var rootNodesList = RootNodes.ToEnumerable();
 
                 var returnedLeaves = (NodeCollection)obj.Invoke("CollectLeafNodes", rootNodesList);
             }
