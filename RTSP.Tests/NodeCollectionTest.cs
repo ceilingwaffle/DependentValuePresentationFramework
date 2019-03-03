@@ -1,6 +1,5 @@
 ﻿namespace RTSP.Tests
 {
-    using System;
     using NUnit.Framework;
     using RTSP.Core;
     using RTSP.Tests.Nodes;

@@ -4,9 +4,7 @@ using CollectionAssert = Microsoft.VisualStudio.TestTools.UnitTesting.Collection
 namespace RTSP.Tests
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
