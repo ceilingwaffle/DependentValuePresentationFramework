@@ -76,11 +76,16 @@ namespace RTSP.Tests
         [Test]
         public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()
         {
+            int iterations = 20000;
+
+            // assert minimum 3 iterations because we need parent, child, grandchild minimum
+            Assert.GreaterOrEqual(iterations, 3);
+
             try
             {
                 var dynamicNodes = new List<Node>();
 
-                for (int i = 0; i < 20000; i++)
+                for (int i = 0; i < iterations; i++)
                 {
                     Node n = CreateDynamicNode();
                     dynamicNodes.Add(n);
@@ -93,13 +98,37 @@ namespace RTSP.Tests
                     }
                 }
 
+                // assert expected number of dynamic nodes created
+                Assert.AreEqual(dynamicNodes.Count, iterations);
+
+                // assert parent, child, grandchild are not null
+                Node p = dynamicNodes[0];
+                Node c = dynamicNodes[1];
+                Node gc = dynamicNodes[2];
+                Assert.IsNotNull(p);
+                Assert.IsNotNull(c);
+                Assert.IsNotNull(gc);
+
+                // assert that the first node is the second node's parent
+                Node expectedParent = null;
+                c?.Parents?.TryGetValue(p.GetType(), out expectedParent);
+                Assert.IsNotNull(expectedParent);
+                Assert.AreEqual(p, expectedParent);
+
+                // assert that the grandparent of grandchild is not the parent of grandchild
+                Node expectedParentOfGC = null;
+                gc?.Parents?.TryGetValue(c.GetType(), out expectedParentOfGC);
+                Assert.IsNotNull(expectedParentOfGC);
+                Assert.AreNotEqual(p, expectedParentOfGC);
+
+                // stack overflow test on thousands of descendents
                 var rootNode = dynamicNodes[0];
                 _nodeSupervisor.AddRootNodes(rootNode);
 
                 NodeSupervisor target = _nodeSupervisor;
                 PrivateObject obj = new PrivateObject(target);
-                var RootNodes = new NodeCollection(rootNode);
-                var rootNodesList = RootNodes.ToEnumerable();
+                NodeCollection RootNodes = new NodeCollection(rootNode);
+                IEnumerable<Node> rootNodesList = RootNodes.ToEnumerable();
 
                 var returnedLeaves = (NodeCollection)obj.Invoke("CollectLeafNodes", rootNodesList);
             }
@@ -113,6 +142,10 @@ namespace RTSP.Tests
             }
         }
 
+        /// <summary>
+        /// Returns an instance of a "dynamic" Node object (derived from the abstract Node class) with a unique class name.
+        /// </summary>
+        /// <returns></returns>
         private static Node CreateDynamicNode()
         {
             Type baseType = typeof(Node);
@@ -135,6 +168,7 @@ namespace RTSP.Tests
             Type proxy = typeBuilder.CreateType();
 
             Node n = (Node)Activator.CreateInstance(proxy);
+
             return n;
         }
     }
