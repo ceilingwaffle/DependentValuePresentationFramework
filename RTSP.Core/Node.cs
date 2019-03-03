@@ -20,12 +20,16 @@ namespace RTSP.Core
         public NodeCollection Children { get; }
         public NodeCollection Parents { get; }
 
+        public static List<Node> InitializedNodesList = new List<Node>();
+
         public Node()
         {
             _ResetUpdateTaskCTS();
             _InitValueLedger();
             Children = new NodeCollection();
             Parents = new NodeCollection();
+
+            InitializedNodesList.Add(this);
         }
 
         private void _ResetUpdateTaskCTS()
