@@ -38,7 +38,6 @@ namespace RTSP.Core
 
         internal void BuildLeafNodes()
         {
-            // TODO: replace all these uses of Select with a custom Class for Dictionary<Type, Node> with a GetNodes() method
             var rootNodesList = RootNodes.ToEnumerable();
 
             LeafNodes = CollectLeafNodes(rootNodesList);
