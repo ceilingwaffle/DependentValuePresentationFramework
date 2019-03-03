@@ -46,26 +46,32 @@ namespace RTSP.Core
 
         private NodeCollection CollectLeafNodes(IEnumerable<Node> nodes)
         {
-            //_depth++;
-            //System.Diagnostics.Debug.WriteLine($"-----Depth: {_depth}");
             var leaves = new NodeCollection();
 
-            // TODO: Replace recursion with while loop or task? Possible stack overflow exception...
+            var unvisited = new Stack<Node>();
+
             foreach (var node in nodes)
             {
-                if (! node.HasChildren())
+                unvisited.Push(node);
+            }
+
+            while (unvisited.Count > 0)
+            {
+                var node = unvisited.Pop();
+
+                if (!node.HasChildren())
                 {
                     leaves.Add(node);
                 }
                 else
                 {
                     var children = node.Children.ToList().Select((n) => { return n.Value; });
-                    var childrenLeafs = CollectLeafNodes(children);
 
-                    // merge
-                    childrenLeafs.ToList().ForEach(n => leaves.Add(n.Value));
+                    foreach (var child in children)
+                    {
+                        unvisited.Push(child);
+                    }
                 }
-
             }
 
             return leaves;
