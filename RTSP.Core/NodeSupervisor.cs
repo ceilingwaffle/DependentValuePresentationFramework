@@ -17,6 +17,8 @@ namespace RTSP.Core
         /// </summary>
         internal NodeCollection LeafNodes { get; private set; }
 
+        //private static int _depth = -1;
+
         public NodeSupervisor()
         {
             RootNodes = new NodeCollection();
@@ -44,6 +46,8 @@ namespace RTSP.Core
 
         private NodeCollection CollectLeafNodes(IEnumerable<Node> nodes)
         {
+            //_depth++;
+            //System.Diagnostics.Debug.WriteLine($"-----Depth: {_depth}");
             var leaves = new NodeCollection();
 
             // TODO: Replace recursion with while loop or task? Possible stack overflow exception...

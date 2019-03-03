@@ -20,7 +20,7 @@ namespace RTSP.Core
         public NodeCollection Children { get; }
         public NodeCollection Parents { get; }
 
-        public static List<Node> InitializedNodesList = new List<Node>();
+        //public static List<Node> InitializedNodesList = new List<Node>();
 
         public Node()
         {
@@ -29,7 +29,7 @@ namespace RTSP.Core
             Children = new NodeCollection();
             Parents = new NodeCollection();
 
-            InitializedNodesList.Add(this);
+            //InitializedNodesList.Add(this);
         }
 
         private void _ResetUpdateTaskCTS()

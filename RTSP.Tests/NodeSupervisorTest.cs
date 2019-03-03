@@ -4,7 +4,11 @@ using CollectionAssert = Microsoft.VisualStudio.TestTools.UnitTesting.Collection
 namespace RTSP.Tests
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
+    using System.Reflection.Emit;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NUnit.Framework;
     using RTSP.Core;
@@ -69,6 +73,70 @@ namespace RTSP.Tests
         }
 
 
+        [Test]
+        public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()
+        {
+            try
+            {
+                var dynamicNodes = new List<Node>();
+
+                for (int i = 0; i < 10000; i++)
+                {
+                    Node n = CreateDynamicNode();
+                    dynamicNodes.Add(n);
+
+                    if (i > 0)
+                    {
+                        var parent = dynamicNodes[i - 1];
+
+                        parent?.AddChildren(n);
+                    }
+                }
+
+                var rootNode = dynamicNodes[0];
+                _nodeSupervisor.AddRootNodes(rootNode);
+
+                NodeSupervisor target = _nodeSupervisor;
+                PrivateObject obj = new PrivateObject(target);
+                var RootNodes = new NodeCollection(rootNode);
+                var rootNodesList = RootNodes.ToList().Select((n) => { return n.Value; });
+
+                var returnedLeaves = (NodeCollection)obj.Invoke("CollectLeafNodes", rootNodesList);
+            }
+            catch (StackOverflowException e)
+            {
+                Assert.Fail($"Expected no StackOverflowException, but got: {e.Message}.");
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Expected no Exception, but got: {e.Message}.");
+            }
+        }
+
+        private static Node CreateDynamicNode()
+        {
+            Type baseType = typeof(Node);
+
+            AssemblyName asmName = new AssemblyName(
+                string.Format("{0}_{1}", "tmpAsm", Guid.NewGuid().ToString("N"))
+            );
+
+            // create in memory assembly only
+            AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
+
+            ModuleBuilder moduleBuilder = asmBuilder.DefineDynamicModule("core");
+
+            string proxyTypeName = string.Format("{0}", Guid.NewGuid().ToString("N"));
+
+            TypeBuilder typeBuilder = moduleBuilder.DefineType(proxyTypeName);
+
+            typeBuilder.SetParent(baseType);
+
+            Type proxy = typeBuilder.CreateType();
+
+            Node n = (Node)Activator.CreateInstance(proxy);
+            return n;
+        }
     }
 
 }
