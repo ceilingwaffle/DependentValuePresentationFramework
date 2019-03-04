@@ -23,6 +23,7 @@ namespace RTSP.Tests
         protected void SetUp()
         {
             _nodeSupervisor = new NodeSupervisor();
+            Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
         }
 
         [TearDown]
@@ -58,17 +59,18 @@ namespace RTSP.Tests
             var emptyCollection = new NodeCollection();
 
             // assertions
-            NodeSupervisor target = _nodeSupervisor;
-            PrivateObject obj = new PrivateObject(target);
             var RootNodes = new NodeCollection(LMC, MilkyWay, Andromeda);
             var rootNodesList = RootNodes.ToEnumerable();
-            var returnedLeaves = (NodeCollection)obj.Invoke("CollectLeafNodes", rootNodesList);
+
+            NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectLeafNodes", rootNodesList);
 
             CollectionAssert.AreNotEquivalent(returnedLeaves.ToList(), emptyCollection.ToList());
             Assert.AreEqual(returnedLeaves.Count(), expectedLeaves.Count());
             // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
             CollectionAssert.AreEquivalent(returnedLeaves.ToList(), expectedLeaves.ToList());
         }
+
+
 
 
         [Test]

@@ -15,6 +15,7 @@
         [SetUp]
         protected void SetUp()
         {
+            Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
         }
 
         [TearDown]
@@ -74,6 +75,22 @@
             Assert.IsTrue(milkyWay.HasChildren());
         }
 
+        [Test]
+        public void TestExceptionThrownWhenInitializingTwoOfSameNodeType()
+        {
+            var milkyWay1 = new MilkyWay();
+
+            try
+            {
+                var milkyWay2 = new MilkyWay();
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Expected ArgumentException (initializing the same node types should not be allowed.");
+        }
     }
 
 

@@ -18,6 +18,7 @@
         protected void SetUp()
         {
             _nodeCollection = new NodeCollection();
+            Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
         }
 
         [TearDown]
@@ -60,18 +61,18 @@
         }
 
         [Test]
-        public void TestNodeExists()
+        public void TestExists()
         {
             // setup
             var coll = new NodeCollection();
             var milkyWay = new MilkyWay();
 
             // assert node does not exist
-            Assert.IsFalse(coll.NodeExists(milkyWay));
+            Assert.IsFalse(coll.Exists(milkyWay));
 
             // assert node exists
             coll.Add(milkyWay);
-            Assert.IsTrue(coll.NodeExists(milkyWay));
+            Assert.IsTrue(coll.Exists(milkyWay));
         }
     }
 

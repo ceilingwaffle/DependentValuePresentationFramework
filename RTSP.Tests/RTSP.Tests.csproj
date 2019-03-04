@@ -52,6 +52,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers.cs" />
     <Compile Include="NodeSupervisorTest.cs" />
     <Compile Include="NodeCollectionTest.cs" />
     <Compile Include="Nodes\MilkyWay.cs" />

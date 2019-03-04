@@ -15,11 +15,10 @@ namespace RTSP.Core
         private Task _updateTask;
         private CancellationTokenSource _updateTaskCTS;
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
+        private static NodeCollection _initializedNodes = new NodeCollection();
 
         public NodeCollection Children { get; }
         public NodeCollection Parents { get; }
-
-        public static NodeCollection InitializedNodes = new NodeCollection();
 
         public Node()
         {
@@ -28,7 +27,20 @@ namespace RTSP.Core
             Children = new NodeCollection();
             Parents = new NodeCollection();
 
-            InitializedNodes.Add(this);
+            _AddInitializedNode(this);
+        }
+
+        private void _AddInitializedNode(Node node)
+        {
+            if (_initializedNodes.Exists(node))
+                throw new ArgumentException("Node of this type already initialized. Only one Node of each Node Type is allowed.");
+
+            _initializedNodes.Add(this);
+        }
+
+        internal static void ResetInitializedNodes()
+        {
+            _initializedNodes = new NodeCollection();
         }
 
         private void _ResetUpdateTaskCTS()

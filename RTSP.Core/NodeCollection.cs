@@ -44,7 +44,7 @@ namespace RTSP.Core
             return _nodes.TryGetValue(nodeType, out node);
         }
 
-        public bool NodeExists(Node targetNode)
+        public bool Exists(Node targetNode)
         {
             bool nodeExists = TryGetValue(targetNode.GetType(), out var existingNode);
 

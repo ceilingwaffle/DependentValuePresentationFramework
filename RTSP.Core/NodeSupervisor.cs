@@ -14,8 +14,6 @@ namespace RTSP.Core
         /// </summary>
         internal NodeCollection LeafNodes { get; private set; }
 
-        //private static int _depth = -1;
-
         public NodeSupervisor()
         {
             RootNodes = new NodeCollection();
@@ -72,7 +70,6 @@ namespace RTSP.Core
 
             return leaves;
         }
-
 
     }
 }
