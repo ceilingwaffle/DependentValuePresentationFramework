@@ -53,7 +53,7 @@ namespace RTSP.Tests
             Earth.AddChildren(HalleysComet);
 
             NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectRootNodes", initializedNodes);
+            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
 
             // expected
             var expectedRoots = new NodeCollection(LMC, MilkyWay, Andromeda);
@@ -91,8 +91,8 @@ namespace RTSP.Tests
 
             //_nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
             NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectRootNodes", initializedNodes);
-            NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectLeafNodes", rootNodes);
+            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
+            NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
 
             // expected
             var expectedLeaves = new NodeCollection(LMC, Jupiter, Oumuamua, HalleysComet);
@@ -158,8 +158,8 @@ namespace RTSP.Tests
                 var rootNode = dynamicNodes[0];
                 //_nodeSupervisor.AddRootNodes(rootNode);
                 NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-                NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectRootNodes", initializedNodes);
-                NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectLeafNodes", rootNodes);
+                NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
+                NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
 
                 NodeCollection returnedLeaves = leafNodes;
             }
