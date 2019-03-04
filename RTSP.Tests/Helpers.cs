@@ -20,34 +20,41 @@ namespace RTSP.Tests
             return (R)obj.Invoke(methodName, methodArgs);
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="targetClass"></param>
-        ///// <param name="methodName"></param>
-        ///// <param name="methodArgs"></param>
-        ///// <returns></returns>
-        //internal static void InvokePrivateMethod(object targetClass, string methodName, params object[] methodArgs)
-        //{
-        //    PrivateObject obj = new PrivateObject(targetClass);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="targetClass"></param>
+        /// <param name="methodName"></param>
+        /// <param name="methodArgs"></param>
+        /// <returns></returns>
+        internal static void InvokePrivateMethod(object targetClass, string methodName, params object[] methodArgs)
+        {
+            PrivateObject obj = new PrivateObject(targetClass);
 
-        //    obj.Invoke(methodName, methodArgs);
-        //}
+            obj.Invoke(methodName, methodArgs);
+        }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <typeparam name="R">The return type of method "methodName".</typeparam>
-        ///// <typeparam name="C">The generic class containing the "methodName" method.</typeparam>
-        ///// <param name="methodName"></param>
-        ///// <param name="methodArgs"></param>
-        ///// <returns></returns>
-        //internal static R InvokePrivateStaticMethod<R,C>(string methodName, params object[] methodArgs)
-        //{
-        //    PrivateType pt = new PrivateType(typeof(C));
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="R">The return type of method "methodName".</typeparam>
+        /// <typeparam name="C">The generic class containing the "methodName" method.</typeparam>
+        /// <param name="methodName"></param>
+        /// <param name="methodArgs"></param>
+        /// <returns></returns>
+        internal static R InvokePrivateStaticMethod<R, C>(string methodName, params object[] methodArgs)
+        {
+            PrivateType pt = new PrivateType(typeof(C));
 
-        //    return (R)pt.InvokeStatic(methodName, methodArgs);
-        //}
+            return (R)pt.InvokeStatic(methodName, methodArgs);
+        }
+
+        internal static R GetPrivateStaticProperty<R, C>(string propertyName)
+        {
+            PrivateType pt = new PrivateType(typeof(C));
+
+            return (R)pt.GetStaticProperty(propertyName);
+        }
 
         /// <summary>
         /// 

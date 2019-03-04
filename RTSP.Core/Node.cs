@@ -15,32 +15,29 @@ namespace RTSP.Core
         private Task _updateTask;
         private CancellationTokenSource _updateTaskCTS;
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
-        private static NodeCollection _initializedNodes = new NodeCollection();
 
-        public NodeCollection Children { get; }
-        public NodeCollection Parents { get; }
+        public NodeCollection Children { get; } = new NodeCollection();
+        public NodeCollection Parents { get; } = new NodeCollection();
+        internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
 
         public Node()
         {
             _ResetUpdateTaskCTS();
             _InitValueLedger();
-            Children = new NodeCollection();
-            Parents = new NodeCollection();
-
             _AddInitializedNode(this);
         }
 
         private void _AddInitializedNode(Node node)
         {
-            if (_initializedNodes.Exists(node))
+            if (InitializedNodes.Exists(node))
                 throw new ArgumentException("Node of this type already initialized. Only one Node of each Node Type is allowed.");
 
-            _initializedNodes.Add(this);
+            InitializedNodes.Add(this);
         }
 
         internal static void ResetInitializedNodes()
         {
-            _initializedNodes = new NodeCollection();
+            InitializedNodes = new NodeCollection();
         }
 
         private void _ResetUpdateTaskCTS()
@@ -121,18 +118,18 @@ namespace RTSP.Core
                         return;
                     }
 
+                    // fetch data
+                    Debug.WriteLine($"{T()} Fetching data...", LogCategory.Event, this);
+                    await Task.Delay(TimeSpan.FromMilliseconds(800));
+                    var fetchedDataTs = Helpers.UnixTimestamp();
+                    Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
+
                     var parents = Parents.ToEnumerable();
 
                     foreach (var parent in parents)
                     {
                         await parent.UpdateAsync().ConfigureAwait(false);
                     }
-
-                    // fetch data
-                    Debug.WriteLine($"{T()} Fetching data...", LogCategory.Event, this);
-                    await Task.Delay(TimeSpan.FromMilliseconds(800));
-                    var fetchedDataTs = Helpers.UnixTimestamp();
-                    Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
 
                     // calculate value
                     await Task.Delay(TimeSpan.FromMilliseconds(200));

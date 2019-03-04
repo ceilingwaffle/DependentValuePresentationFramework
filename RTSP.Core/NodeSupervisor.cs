@@ -8,43 +8,47 @@ namespace RTSP.Core
         /// <summary>
         /// Nodes not depending on values from any other Nodes.
         /// </summary>
-        internal NodeCollection RootNodes { get; private set; }
+        internal NodeCollection RootNodes { get; private set; } = new NodeCollection();
         /// <summary>
         /// Nodes having no Nodes depedent on their values.
         /// </summary>
-        internal NodeCollection LeafNodes { get; private set; }
+        internal NodeCollection LeafNodes { get; private set; } = new NodeCollection();
 
         public NodeSupervisor()
         {
-            RootNodes = new NodeCollection();
-            LeafNodes = new NodeCollection();
         }
 
-        public void AddRootNodes(params Node[] nodes)
+        internal void BuildNodeCollections()
         {
-            foreach (var node in nodes)
+            var initializedNodes = Node.InitializedNodes;
+            this.RootNodes = _CollectRootNodes(initializedNodes);
+            this.LeafNodes = _CollectLeafNodes(RootNodes);
+        }
+
+        private NodeCollection _CollectRootNodes(NodeCollection initializedNodesCollection)
+        {
+            var roots = new NodeCollection();
+
+            var initializedNodes = initializedNodesCollection.ToEnumerable();
+
+            foreach (var node in initializedNodes)
             {
-                if (node.HasParents())
-                    throw new Exception($"Node {node.GetType().ToString()} has at least one parent and is therefore not a root Node.");
-
-                RootNodes.Add(node);
+                if (!node.HasParents())
+                {
+                    roots.Add(node);
+                }
             }
+
+            return roots;
         }
 
-        internal void BuildLeafNodes()
-        {
-            var rootNodesList = RootNodes.ToEnumerable();
-
-            LeafNodes = CollectLeafNodes(rootNodesList);
-        }
-
-        private NodeCollection CollectLeafNodes(IEnumerable<Node> nodes)
+        private NodeCollection _CollectLeafNodes(NodeCollection rootNodesCollection)
         {
             var leaves = new NodeCollection();
 
             var unvisited = new Stack<Node>();
 
-            foreach (var node in nodes)
+            foreach (var node in rootNodesCollection.ToEnumerable())
             {
                 unvisited.Push(node);
             }
@@ -63,7 +67,10 @@ namespace RTSP.Core
 
                     foreach (var child in children)
                     {
-                        unvisited.Push(child);
+                        if (! unvisited.Contains(child))
+                        {
+                            unvisited.Push(child);
+                        }
                     }
                 }
             }

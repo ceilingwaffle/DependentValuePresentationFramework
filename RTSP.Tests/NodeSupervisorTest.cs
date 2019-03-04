@@ -33,6 +33,43 @@ namespace RTSP.Tests
         }
 
         [Test]
+        public void TestRootNodesAreRoots()
+        {
+            // setup
+            var LMC = new LMC();
+            var MilkyWay = new MilkyWay();
+            var Andromeda = new Andromeda();
+            var SolarSystem = new SolarSystem();
+            var Sun = new Sun();
+            var Earth = new Earth();
+            var Jupiter = new Jupiter();
+            var Oumuamua = new Oumuamua();
+            var HalleysComet = new HalleysComet();
+
+            MilkyWay.AddChildren(SolarSystem);
+            Andromeda.AddChildren(Oumuamua);
+            SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
+            Sun.AddChildren(HalleysComet);
+            Earth.AddChildren(HalleysComet);
+
+            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectRootNodes", initializedNodes);
+
+            // expected
+            var expectedRoots = new NodeCollection(LMC, MilkyWay, Andromeda);
+            var emptyCollection = new NodeCollection();
+
+            // assertions
+            var returnedRoots = rootNodes;
+
+            CollectionAssert.AreNotEquivalent(returnedRoots.ToList(), emptyCollection.ToList());
+            Assert.GreaterOrEqual(returnedRoots.Count(), 1);
+            Assert.AreEqual(returnedRoots.Count(), expectedRoots.Count());
+            // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
+            CollectionAssert.AreEquivalent(returnedRoots.ToList(), expectedRoots.ToList());
+        }
+
+        [Test]
         public void TestLeafNodesAreLeaves()
         {
             // setup
@@ -52,26 +89,22 @@ namespace RTSP.Tests
             Sun.AddChildren(HalleysComet);
             Earth.AddChildren(HalleysComet);
 
-            _nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
+            //_nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
+            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectRootNodes", initializedNodes);
+            NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectLeafNodes", rootNodes);
 
             // expected
             var expectedLeaves = new NodeCollection(LMC, Jupiter, Oumuamua, HalleysComet);
             var emptyCollection = new NodeCollection();
 
             // assertions
-            var RootNodes = new NodeCollection(LMC, MilkyWay, Andromeda);
-            var rootNodesList = RootNodes.ToEnumerable();
-
-            NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectLeafNodes", rootNodesList);
-
             CollectionAssert.AreNotEquivalent(returnedLeaves.ToList(), emptyCollection.ToList());
+            Assert.GreaterOrEqual(returnedLeaves.Count(), 1);
             Assert.AreEqual(returnedLeaves.Count(), expectedLeaves.Count());
             // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
             CollectionAssert.AreEquivalent(returnedLeaves.ToList(), expectedLeaves.ToList());
         }
-
-
-
 
         [Test]
         public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()
@@ -123,14 +156,12 @@ namespace RTSP.Tests
 
                 // stack overflow test on thousands of descendents
                 var rootNode = dynamicNodes[0];
-                _nodeSupervisor.AddRootNodes(rootNode);
+                //_nodeSupervisor.AddRootNodes(rootNode);
+                NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+                NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectRootNodes", initializedNodes);
+                NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "CollectLeafNodes", rootNodes);
 
-                NodeSupervisor target = _nodeSupervisor;
-                PrivateObject obj = new PrivateObject(target);
-                NodeCollection RootNodes = new NodeCollection(rootNode);
-                IEnumerable<Node> rootNodesList = RootNodes.ToEnumerable();
-
-                var returnedLeaves = (NodeCollection)obj.Invoke("CollectLeafNodes", rootNodesList);
+                NodeCollection returnedLeaves = leafNodes;
             }
             catch (StackOverflowException e)
             {
