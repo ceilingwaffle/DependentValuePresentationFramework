@@ -58,6 +58,21 @@
             _nodeCollection.Add(milkyWay);
             Assert.AreEqual(_nodeCollection.Count(), 1);
         }
+
+        [Test]
+        public void TestNodeExists()
+        {
+            // setup
+            var coll = new NodeCollection();
+            var milkyWay = new MilkyWay();
+
+            // assert node does not exist
+            Assert.IsFalse(coll.NodeExists(milkyWay));
+
+            // assert node exists
+            coll.Add(milkyWay);
+            Assert.IsTrue(coll.NodeExists(milkyWay));
+        }
     }
 
 }
