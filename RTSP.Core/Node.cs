@@ -19,7 +19,7 @@ namespace RTSP.Core
         public NodeCollection Children { get; }
         public NodeCollection Parents { get; }
 
-        //public static List<Node> InitializedNodesList = new List<Node>();
+        //public static NodeCollection InitializedNodes = new NodeCollection();
 
         public Node()
         {
@@ -28,7 +28,7 @@ namespace RTSP.Core
             Children = new NodeCollection();
             Parents = new NodeCollection();
 
-            //InitializedNodesList.Add(this);
+            //InitializedNodes.Add(this);
         }
 
         private void _ResetUpdateTaskCTS()
@@ -109,11 +109,6 @@ namespace RTSP.Core
                         return;
                     }
 
-                    Debug.WriteLine($"{T()} Fetching data...", LogCategory.Event, this);
-                    await Task.Delay(TimeSpan.FromMilliseconds(800));
-                    var fetchedDataTs = Helpers.UnixTimestamp();
-                    Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
-
                     var parents = Parents.ToEnumerable();
 
                     foreach (var parent in parents)
@@ -121,6 +116,13 @@ namespace RTSP.Core
                         await parent.UpdateAsync().ConfigureAwait(false);
                     }
 
+                    // fetch data
+                    Debug.WriteLine($"{T()} Fetching data...", LogCategory.Event, this);
+                    await Task.Delay(TimeSpan.FromMilliseconds(800));
+                    var fetchedDataTs = Helpers.UnixTimestamp();
+                    Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
+
+                    // calculate value
                     await Task.Delay(TimeSpan.FromMilliseconds(200));
                     var calculatedValue = Helpers.UnixTimestamp() - fetchedDataTs;
                     //_SetValue(calculatedValue);

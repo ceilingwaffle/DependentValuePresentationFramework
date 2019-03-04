@@ -74,7 +74,7 @@ namespace RTSP.Tests
         [Test]
         public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()
         {
-            int iterations = 20000;
+            int iterations = 10000;
 
             // assert minimum 3 iterations because we need parent, child, grandchild minimum
             Assert.GreaterOrEqual(iterations, 3);

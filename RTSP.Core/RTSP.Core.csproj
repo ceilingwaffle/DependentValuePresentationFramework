@@ -7,8 +7,8 @@
     <ProjectGuid>{8653A255-B83D-4621-B25F-703A43C6EEC9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RTSP</RootNamespace>
-    <AssemblyName>RTSP</AssemblyName>
+    <RootNamespace>RTSP.Core</RootNamespace>
+    <AssemblyName>RTSP.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
