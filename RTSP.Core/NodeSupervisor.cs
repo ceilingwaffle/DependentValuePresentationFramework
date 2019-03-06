@@ -14,23 +14,37 @@ namespace RTSP.Core
         /// </summary>
         internal NodeCollection LeafNodes { get; private set; } = new NodeCollection();
 
+        internal NodeCollection EnabledNodes { get; private set; } = new NodeCollection();
+
         public NodeSupervisor()
         {
         }
 
         internal void BuildNodeCollections()
         {
+            EnabledNodes = _CollectEnabledNodes(Node.InitializedNodes);
             RootNodes = _CollectRootNodes(Node.InitializedNodes);
             LeafNodes = _CollectLeafNodes(RootNodes);
+        }
+
+        private NodeCollection _CollectEnabledNodes(NodeCollection initializedNodes)
+        {
+            var enabled = new NodeCollection();
+
+            foreach (var node in initializedNodes.ToEnumerable())
+            {
+                // TODO: Check if node is enabled from the config
+                enabled.Add(node);
+            }
+
+            return enabled;
         }
 
         private NodeCollection _CollectRootNodes(NodeCollection initializedNodesCollection)
         {
             var roots = new NodeCollection();
 
-            var initializedNodes = initializedNodesCollection.ToEnumerable();
-
-            foreach (var node in initializedNodes)
+            foreach (var node in initializedNodesCollection.ToEnumerable())
             {
                 if (!node.HasParents())
                 {
@@ -82,6 +96,13 @@ namespace RTSP.Core
             RootNodes = new NodeCollection();
             LeafNodes = new NodeCollection();
             Node.ResetInitializedNodes();
+        }
+
+        internal NodeCollection GetEnabledNodes()
+        {
+            // TODO: Return only the enabled nodes
+
+            return Node.InitializedNodes;
         }
 
     }

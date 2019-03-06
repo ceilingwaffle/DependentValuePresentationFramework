@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace RTSP.Core
 {
-    public class NodeCollection
+    // TODO: Implement IEnumerable so we don't have to call "foreach nodes.ToEnumerable()" - we can just call "foreach nodes".
+    public class NodeCollection 
     {
         private Dictionary<Type, Node> _nodes;
 
