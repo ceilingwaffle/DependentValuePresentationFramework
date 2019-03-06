@@ -20,6 +20,8 @@ namespace RTSP.Core
         public NodeCollection Parents { get; } = new NodeCollection();
         internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
 
+        public static object tempValue;
+
         public Node()
         {
             _ResetUpdateTaskCTS();
@@ -27,7 +29,7 @@ namespace RTSP.Core
             _AddInitializedNode(this);
         }
 
-        public abstract object DetermineValue();
+        public abstract Task<object> DetermineValueAsync();
 
         private void _AddInitializedNode(Node node)
         {
@@ -133,7 +135,9 @@ namespace RTSP.Core
                         await parent.UpdateAsync().ConfigureAwait(false);
                     }
 
-                    // calculate value
+                    // TODO: calculate value
+                    var value = await DetermineValueAsync();
+
                     await Task.Delay(TimeSpan.FromMilliseconds(200));
                     var calculatedValue = Helpers.UnixTimestamp() - fetchedDataTs;
                     //_SetValue(calculatedValue);

@@ -9,6 +9,8 @@ namespace RTSP.Tests
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Reflection.Emit;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NUnit.Framework;
     using RTSP.Core;
@@ -201,8 +203,9 @@ namespace RTSP.Tests
             // define the "DetermineValue" abstract method implementation of class Node
             DefineMethodOnTypeBuilder(
                 typeBuilder: typeBuilder,
-                methodName: "DetermineValue",
-                methodReturnType: typeof(object)
+                methodName: "DetermineValueAsync",
+                methodReturnType: typeof(Task<object>),
+                methodReturnValue: Task.Run(() => { return new object(); })
             );
 
             Type proxy = typeBuilder.CreateType();
@@ -218,18 +221,25 @@ namespace RTSP.Tests
         /// <param name="typeBuilder"></param>
         /// <param name="methodName"></param>
         /// <param name="methodReturnType"></param>
-        private static void DefineMethodOnTypeBuilder(TypeBuilder typeBuilder, string methodName, Type methodReturnType)
+        private static void DefineMethodOnTypeBuilder(TypeBuilder typeBuilder, string methodName, Type methodReturnType, object methodReturnValue)
         {
-            // TODO: accept any object as parameter, and pass it as the return value in generator.Emit() somehow...
-            byte returnValue = 123;
+            // get the pointer address of the methodReturnValue object
+            // TODO: Bug where when we call DynamicNode.DetermineValueAsync() it throws "Bad class token".
+            GCHandle objHandle = GCHandle.Alloc(methodReturnValue, GCHandleType.WeakTrackResurrection);
+            int returnValueAddr = GCHandle.ToIntPtr(objHandle).ToInt32();
 
             MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName,
                 MethodAttributes.Public | MethodAttributes.Virtual, methodReturnType, Type.EmptyTypes);
+
             ILGenerator generator = methodBuilder.GetILGenerator();
-            generator.Emit(OpCodes.Ldobj, returnValue); // returnValue = the object returned from the given method
+
+            generator.Emit(OpCodes.Ldobj, returnValueAddr);
             generator.Emit(OpCodes.Ret);
+
             typeBuilder.DefineMethodOverride(methodBuilder, typeBuilder.BaseType.GetMethod(methodName));
         }
+
+
     }
 
 }

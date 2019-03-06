@@ -1,12 +1,13 @@
-﻿using RTSP.Core;
+﻿using System.Threading.Tasks;
+using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
     class LMC : Node
     {
-        public override object DetermineValue()
+        public override Task<object> DetermineValueAsync()
         {
-            return new object();
+            return Task.Run(() => { return new object(); });
         }
     }
 }
