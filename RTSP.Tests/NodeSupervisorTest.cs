@@ -1,4 +1,5 @@
-﻿using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+﻿using System.Runtime.InteropServices.WindowsRuntime;
+using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 using CollectionAssert = Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert;
 
 namespace RTSP.Tests
@@ -197,14 +198,12 @@ namespace RTSP.Tests
 
             typeBuilder.SetParent(baseType);
 
-            //// Define the "DetermineValue" abstract method implementation from Node
-            Type methodReturnType = typeof(object);
-            MethodBuilder methodBuilder = typeBuilder.DefineMethod("DetermineValue", MethodAttributes.Public | MethodAttributes.Virtual, methodReturnType, Type.EmptyTypes);
-            ILGenerator generator = methodBuilder.GetILGenerator();
-            generator.Emit(OpCodes.Ldobj, 123); // 123 is the object returned from the DetermineValue method
-            generator.Emit(OpCodes.Ret);
-            typeBuilder.DefineMethodOverride(methodBuilder, typeof(Node).GetMethod("DetermineValue"));
-            ///////////////////////////////
+            // define the "DetermineValue" abstract method implementation of class Node
+            DefineMethodOnTypeBuilder(
+                typeBuilder: typeBuilder,
+                methodName: "DetermineValue",
+                methodReturnType: typeof(object)
+            );
 
             Type proxy = typeBuilder.CreateType();
 
@@ -212,13 +211,24 @@ namespace RTSP.Tests
 
             return n;
         }
-    }
 
-    class SomeNode : Node
-    {
-        public override object DetermineValue()
+        /// <summary>
+        /// Defines the abstract method implementation of some class on the given TypeBuilder
+        /// </summary>
+        /// <param name="typeBuilder"></param>
+        /// <param name="methodName"></param>
+        /// <param name="methodReturnType"></param>
+        private static void DefineMethodOnTypeBuilder(TypeBuilder typeBuilder, string methodName, Type methodReturnType)
         {
-            return new object();
+            // TODO: accept any object as parameter, and pass it as the return value in generator.Emit() somehow...
+            byte returnValue = 123;
+
+            MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName,
+                MethodAttributes.Public | MethodAttributes.Virtual, methodReturnType, Type.EmptyTypes);
+            ILGenerator generator = methodBuilder.GetILGenerator();
+            generator.Emit(OpCodes.Ldobj, returnValue); // returnValue = the object returned from the given method
+            generator.Emit(OpCodes.Ret);
+            typeBuilder.DefineMethodOverride(methodBuilder, typeBuilder.BaseType.GetMethod(methodName));
         }
     }
 
