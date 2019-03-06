@@ -5,6 +5,7 @@ namespace RTSP.Tests
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq.Expressions;
     using System.Reflection;
     using System.Reflection.Emit;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -196,11 +197,28 @@ namespace RTSP.Tests
 
             typeBuilder.SetParent(baseType);
 
+            //// Define the "DetermineValue" abstract method implementation from Node
+            Type methodReturnType = typeof(object);
+            MethodBuilder methodBuilder = typeBuilder.DefineMethod("DetermineValue", MethodAttributes.Public | MethodAttributes.Virtual, methodReturnType, Type.EmptyTypes);
+            ILGenerator generator = methodBuilder.GetILGenerator();
+            generator.Emit(OpCodes.Ldobj, 123); // 123 is the object returned from the DetermineValue method
+            generator.Emit(OpCodes.Ret);
+            typeBuilder.DefineMethodOverride(methodBuilder, typeof(Node).GetMethod("DetermineValue"));
+            ///////////////////////////////
+
             Type proxy = typeBuilder.CreateType();
 
             Node n = (Node)Activator.CreateInstance(proxy);
 
             return n;
+        }
+    }
+
+    class SomeNode : Node
+    {
+        public override object DetermineValue()
+        {
+            return new object();
         }
     }
 

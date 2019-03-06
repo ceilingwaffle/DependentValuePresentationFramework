@@ -27,6 +27,8 @@ namespace RTSP.Core
             _AddInitializedNode(this);
         }
 
+        public abstract object DetermineValue();
+
         private void _AddInitializedNode(Node node)
         {
             if (InitializedNodes.Exists(node))
