@@ -122,27 +122,15 @@ namespace RTSP.Core
                         return;
                     }
 
-                    // fetch data
-                    Debug.WriteLine($"{T()} Fetching data...", LogCategory.Event, this);
-                    await Task.Delay(TimeSpan.FromMilliseconds(800));
-                    var fetchedDataTs = Helpers.UnixTimestamp();
-                    Debug.WriteLine($"{T()} Completed: FetchData().", LogCategory.Event, this);
-
-                    var parents = Parents.ToEnumerable();
-
-                    foreach (var parent in parents)
+                    foreach (var parent in Parents.ToEnumerable())
                     {
                         await parent.UpdateAsync().ConfigureAwait(false);
                     }
 
+
                     // TODO: calculate value
                     var value = await DetermineValueAsync();
-
-                    await Task.Delay(TimeSpan.FromMilliseconds(200));
-                    var calculatedValue = Helpers.UnixTimestamp() - fetchedDataTs;
-                    //_SetValue(calculatedValue);
-                    _SetValue(Helpers.Rand(1, 2));
-                    Debug.WriteLine($"{T()} Completed: CalculateValue(fetchedData).", LogCategory.Event, this);
+                    _SetValue(value);
 
                     if (_ValueChanged())
                     {
