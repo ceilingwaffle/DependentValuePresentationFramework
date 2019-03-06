@@ -30,7 +30,7 @@ namespace RTSP.Core
         private void _AddInitializedNode(Node node)
         {
             if (InitializedNodes.Exists(node))
-                throw new ArgumentException("Node of this type already initialized. Only one Node of each Node Type is allowed.");
+                throw new ArgumentException($"Node of type {node.GetType().ToString()} already initialized. Only one node of each node type is allowed.");
 
             InitializedNodes.Add(this);
         }

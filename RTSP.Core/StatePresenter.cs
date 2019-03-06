@@ -51,7 +51,7 @@ namespace RTSP.Core
 
         public void ResetAllNodes()
         {
-            Node.ResetInitializedNodes();
+            NodeSupervisor.Reset();
         }
     }
 }

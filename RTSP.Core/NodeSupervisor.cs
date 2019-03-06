@@ -20,9 +20,8 @@ namespace RTSP.Core
 
         internal void BuildNodeCollections()
         {
-            var initializedNodes = Node.InitializedNodes;
-            this.RootNodes = _CollectRootNodes(initializedNodes);
-            this.LeafNodes = _CollectLeafNodes(RootNodes);
+            RootNodes = _CollectRootNodes(Node.InitializedNodes);
+            LeafNodes = _CollectLeafNodes(RootNodes);
         }
 
         private NodeCollection _CollectRootNodes(NodeCollection initializedNodesCollection)
@@ -76,6 +75,13 @@ namespace RTSP.Core
             }
 
             return leaves;
+        }
+
+        internal void Reset()
+        {
+            RootNodes = new NodeCollection();
+            LeafNodes = new NodeCollection();
+            Node.ResetInitializedNodes();
         }
 
     }
