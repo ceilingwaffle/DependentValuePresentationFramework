@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace RTSP.Core
 {
-    // TODO: Implement IEnumerable so we don't have to call "foreach nodes.ToEnumerable()" - we can just call "foreach nodes".
-    public class NodeCollection 
+    public class NodeCollection : IEnumerable<Node>
     {
         private Dictionary<Type, Node> _nodes;
 
@@ -51,5 +51,17 @@ namespace RTSP.Core
 
             return nodeExists;
         }
+
+        #region Implementation of IEnumerable
+        public IEnumerator<Node> GetEnumerator()
+        {
+            return _nodes.ToList().Select((node) => { return node.Value; }).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+        #endregion
     }
 }

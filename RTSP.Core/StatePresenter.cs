@@ -35,7 +35,7 @@ namespace RTSP.Core
                 if (cts.IsCancellationRequested)
                     return;
 
-                var leafNodes = NodeSupervisor.LeafNodes.ToEnumerable();
+                var leafNodes = NodeSupervisor.LeafNodes;
 
                 foreach (var node in leafNodes)
                 {

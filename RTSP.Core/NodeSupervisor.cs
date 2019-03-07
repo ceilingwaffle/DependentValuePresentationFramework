@@ -31,7 +31,7 @@ namespace RTSP.Core
         {
             var enabled = new NodeCollection();
 
-            foreach (var node in initializedNodes.ToEnumerable())
+            foreach (var node in initializedNodes)
             {
                 // TODO: Check if node is enabled from the config
                 enabled.Add(node);
@@ -44,7 +44,7 @@ namespace RTSP.Core
         {
             var roots = new NodeCollection();
 
-            foreach (var node in initializedNodesCollection.ToEnumerable())
+            foreach (var node in initializedNodesCollection)
             {
                 if (!node.HasParents())
                 {
@@ -61,7 +61,7 @@ namespace RTSP.Core
 
             var unvisited = new Stack<Node>();
 
-            foreach (var node in rootNodesCollection.ToEnumerable())
+            foreach (var node in rootNodesCollection)
             {
                 unvisited.Push(node);
             }
@@ -76,9 +76,7 @@ namespace RTSP.Core
                 }
                 else
                 {
-                    var children = node.Children.ToEnumerable();
-
-                    foreach (var child in children)
+                    foreach (var child in node.Children)
                     {
                         if (! unvisited.Contains(child))
                         {

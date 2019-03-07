@@ -20,7 +20,7 @@ namespace RTSP.Core
             NodeCollection nodes = _nodeSupervisor.GetEnabledNodes();
 
             // build a State containing every node value
-            foreach (var node in nodes.ToEnumerable())
+            foreach (var node in nodes)
             {
                 var value = node.GetValue();
 

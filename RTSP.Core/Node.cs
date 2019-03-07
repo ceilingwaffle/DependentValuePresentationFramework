@@ -122,7 +122,7 @@ namespace RTSP.Core
                         return;
                     }
 
-                    foreach (var parent in Parents.ToEnumerable())
+                    foreach (var parent in Parents)
                     {
                         await parent.UpdateAsync().ConfigureAwait(false);
                     }
@@ -136,8 +136,7 @@ namespace RTSP.Core
                     {
                         // This Node's value changed, meaning all child node values are now potentially expired.
                         // So issue a cancel to all child update tasks.
-                        var children = Children.ToEnumerable();
-                        foreach (var child in children)
+                        foreach (var child in Children)
                         {
                             Debug.WriteLine($"{T()} Issuing cancel to child {child.T()}...");
                             child._updateTaskCTS.Cancel();
