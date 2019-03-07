@@ -30,11 +30,6 @@ namespace RTSP.Core
             return _nodes.ToList();
         }
 
-        public IEnumerable<Node> ToEnumerable()
-        {
-            return _nodes.ToList().Select((node) => { return node.Value; });
-        }
-
         public int Count()
         {
             return _nodes.Count;
