@@ -3,7 +3,7 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
-    class Jupiter : Node
+    internal class Jupiter : Node
     {
         public override Task<object> DetermineValueAsync()
         {

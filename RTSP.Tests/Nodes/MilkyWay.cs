@@ -3,8 +3,10 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
-    class MilkyWay : Node
+    internal class MilkyWay : Node
     {
+        public override string StatePropertyName => "MilkyWay";
+
         public override Task<object> DetermineValueAsync()
         {
             return Task.Run(() => { return new object(); });

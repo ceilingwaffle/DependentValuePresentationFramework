@@ -9,7 +9,6 @@
     {
         private NodeCollection _nodeCollection;
 
-
         /// <summary>
         /// Initializes Node test objects
         /// </summary>
@@ -19,6 +18,7 @@
         {
             _nodeCollection = new NodeCollection();
             Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
+            Helpers.InvokePrivateStaticMethod<Node>("ResetNodeStatePropertyNames");
         }
 
         [TearDown]

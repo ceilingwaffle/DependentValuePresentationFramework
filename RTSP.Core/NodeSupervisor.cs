@@ -33,8 +33,11 @@ namespace RTSP.Core
 
             foreach (var node in initializedNodes)
             {
-                // TODO: Check if node is enabled from the config
-                enabled.Add(node);
+                if (node.IsEnabled())
+                {
+                    enabled.Add(node);
+                }
+
             }
 
             return enabled;
@@ -78,7 +81,7 @@ namespace RTSP.Core
                 {
                     foreach (var child in node.Children)
                     {
-                        if (! unvisited.Contains(child))
+                        if (!unvisited.Contains(child))
                         {
                             unvisited.Push(child);
                         }
@@ -94,6 +97,8 @@ namespace RTSP.Core
             RootNodes = new NodeCollection();
             LeafNodes = new NodeCollection();
             Node.ResetInitializedNodes();
+            Node.ResetNodeStatePropertyNames();
+            EnabledNodes = GetEnabledNodes();
         }
 
         internal NodeCollection GetEnabledNodes()

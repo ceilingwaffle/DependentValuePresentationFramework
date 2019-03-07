@@ -3,7 +3,7 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
-    class HalleysComet : Node
+    internal class HalleysComet : Node
     {
         public override Task<object> DetermineValueAsync()
         {

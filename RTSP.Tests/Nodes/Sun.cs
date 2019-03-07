@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace RTSP.Tests.Nodes
 {
-    class Sun : Node
+    internal class Sun : Node
     {
         public override Task<object> DetermineValueAsync()
         {

@@ -3,7 +3,7 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
-    class Oumuamua : Node
+    internal class Oumuamua : Node
     {
         public override Task<object> DetermineValueAsync()
         {

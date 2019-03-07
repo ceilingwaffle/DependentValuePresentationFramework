@@ -22,7 +22,14 @@ namespace RTSP.Core
             // build a State containing every node value
             foreach (var node in nodes)
             {
+                if (! node.IsStatePresentable())
+                {
+                    continue;
+                }
+
                 var value = node.GetValue();
+
+
 
                 // TODO: Assign value to the corresponding state property
             }

@@ -3,7 +3,7 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
-    class Earth : Node
+    internal class Earth : Node
     {
         public override Task<object> DetermineValueAsync()
         {

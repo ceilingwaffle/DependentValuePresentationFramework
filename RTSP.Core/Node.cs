@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace RTSP.Core
 {
+    // TODO: Extract some code into NodeValidator
+    // TODO: Extract some code into NodeUpdater
     public abstract class Node
     {
         private readonly object _valueLock = new object();
@@ -14,7 +16,15 @@ namespace RTSP.Core
 
         private Task _updateTask;
         private CancellationTokenSource _updateTaskCTS;
+        // TODO: Load this from config
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
+
+        /// <summary>
+        /// The property name of this node's value on the State object.
+        /// Will only be included on the State if this is overriden and is valid (see _IsValidStatePropertyName method)
+        /// </summary>
+        public virtual string StatePropertyName { get; set; } = null; //TODO: This should be protected, but it breaks TestEnabledNodes
+        private static HashSet<string> NodeStatePropertyNames { get; set; } = new HashSet<string>();
 
         public NodeCollection Children { get; } = new NodeCollection();
         public NodeCollection Parents { get; } = new NodeCollection();
@@ -31,17 +41,51 @@ namespace RTSP.Core
 
         public abstract Task<object> DetermineValueAsync();
 
+        /// <summary>
+        /// Valid if property is overridden and not defined as null/empty/whitespace.
+        /// </summary>
+        /// <returns></returns>
+        private bool _IsValidStatePropertyName()
+        {
+            if (StatePropertyName is null && ! Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName"))
+            {
+                return true;
+            }
+
+            return !string.IsNullOrWhiteSpace(StatePropertyName);
+        }
+
         private void _AddInitializedNode(Node node)
         {
+            _ValidateNode(node);
+
+            NodeStatePropertyNames.Add(StatePropertyName);
+            InitializedNodes.Add(this);
+        }
+
+        private void _ValidateNode(Node node)
+        {
+            // TODO: Replace ArgumentException with custom Exception class for each potential invalid reason below (also replace in NodeTest.cs )
+
             if (InitializedNodes.Exists(node))
                 throw new ArgumentException($"Node of type {node.GetType().ToString()} already initialized. Only one node of each node type is allowed.");
 
-            InitializedNodes.Add(this);
+            // StatePropertyName must be unique to each node
+            if (!_IsValidStatePropertyName())
+                throw new ArgumentException($"StatePropertyName of node {node.GetType().ToString()} is invalid (must not be null, empty, or whitespace).");
+
+            if (StatePropertyName != null && NodeStatePropertyNames.Contains(StatePropertyName))
+                throw new ArgumentException($"Node {node.GetType().ToString()}: Another node already has a StatePropertyName of {StatePropertyName}. Must be unique.");
         }
 
         internal static void ResetInitializedNodes()
         {
             InitializedNodes = new NodeCollection();
+        }
+
+        internal static void ResetNodeStatePropertyNames()
+        {
+            NodeStatePropertyNames = new HashSet<string>();
         }
 
         private void _ResetUpdateTaskCTS()
@@ -212,6 +256,17 @@ namespace RTSP.Core
         public object GetPreviousValue()
         {
             return GetPreviousValue(age: 1);
+        }
+
+        public bool IsStatePresentable()
+        {
+            return _IsValidStatePropertyName();
+        }
+
+        public bool IsEnabled()
+        {
+            // TODO: make a comment on HasOver.. that if it's overridden but set to null, we define this as not overridden.
+            return Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName");
         }
 
         internal object GetPreviousValue(int age)

@@ -22,6 +22,7 @@ namespace RTSP.Tests
         {
             _nodeSupervisor = new NodeSupervisor();
             Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
+            Helpers.InvokePrivateStaticMethod<Node>("ResetNodeStatePropertyNames");
         }
 
         [TearDown]
@@ -102,6 +103,19 @@ namespace RTSP.Tests
             Assert.AreEqual(returnedLeaves.Count(), expectedLeaves.Count());
             // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
             CollectionAssert.AreEquivalent(returnedLeaves.ToList(), expectedLeaves.ToList());
+        }
+
+        [Test]
+        public void TestEnabledNodes()
+        {
+            var shouldBeEnabled = new ValidOverriddenStatePropertyNameNode();
+            var shouldNotBeEnabled = new NotOverriddenStatePropertyNameNode();
+
+            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+            NodeCollection enabledNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectEnabledNodes", initializedNodes);
+
+            CollectionAssert.Contains(enabledNodes, shouldBeEnabled);
+            CollectionAssert.DoesNotContain(enabledNodes, shouldNotBeEnabled);
         }
 
         [Test]
@@ -232,7 +246,6 @@ namespace RTSP.Tests
 
             typeBuilder.DefineMethodOverride(methodBuilder, typeBuilder.BaseType.GetMethod(methodName));
         }
-
 
     }
 

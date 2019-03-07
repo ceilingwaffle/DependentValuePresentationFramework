@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace RTSP.Tests.Nodes
 {
-    class Andromeda : Node
+    internal class Andromeda : Node
     {
         public override Task<object> DetermineValueAsync()
         {

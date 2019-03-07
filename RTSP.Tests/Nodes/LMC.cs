@@ -3,8 +3,10 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
-    class LMC : Node
+    internal class LMC : Node
     {
+        public override string StatePropertyName => "LMC";
+
         public override Task<object> DetermineValueAsync()
         {
             return Task.Run(() => { return new object(); });
