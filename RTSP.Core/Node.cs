@@ -259,11 +259,6 @@ namespace RTSP.Core
             return GetPreviousValue(age: 1);
         }
 
-        public bool IsStatePresentable()
-        {
-            return _IsValidStatePropertyName();
-        }
-
         public bool IsEnabled()
         {
             // TODO: make a comment on HasOver.. that if it's overridden but set to null, we define this as not overridden.
@@ -274,7 +269,11 @@ namespace RTSP.Core
 
         internal object GetPreviousValue(int age)
         {
-            return _valueLedger.ElementAt(age);
+            lock (_valueLock)
+            {
+                return _valueLedger.ElementAt(age);
+            }
+
         }
 
         /// <summary>

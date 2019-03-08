@@ -19,27 +19,20 @@ namespace RTSP.Core
         {
             NodeCollection nodes = _nodeSupervisor.GetEnabledNodes();
 
+            var state = new State();
+
             // build a State containing every node value
             foreach (var node in nodes)
             {
-                if (! node.IsStatePresentable())
+                if (! node.IsEnabled())
                 {
                     continue;
                 }
 
-                var value = node.GetValue();
-
-
-
-                // TODO: Assign value to the corresponding state property
+                state[node.StatePropertyName] = node.GetValue();
             }
 
-            // TODO: either:
-            // a) Dynamic object with properties (node type names) defined at runtime
-            // b) Emit/Reflection to add properties to the State class
-            //State.MapId; 
-
-            return new State();
+            return state;
         }
     }
 }
