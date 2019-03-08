@@ -23,7 +23,8 @@ namespace RTSP.Core
         /// The property name of this node's value on the State object.
         /// Will only be included on the State if this is overriden and is valid (see _IsValidStatePropertyName method)
         /// </summary>
-        public virtual string StatePropertyName { get; set; } = null; //TODO: This should be protected, but it breaks TestEnabledNodes
+        public virtual string StatePropertyName { get; private set; } = null; //TODO: This should be protected, but it breaks TestEnabledNodes
+
         private static HashSet<string> NodeStatePropertyNames { get; set; } = new HashSet<string>();
 
         public NodeCollection Children { get; } = new NodeCollection();
@@ -47,7 +48,7 @@ namespace RTSP.Core
         /// <returns></returns>
         private bool _IsValidStatePropertyName()
         {
-            if (StatePropertyName is null && ! Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName"))
+            if (StatePropertyName is null)
             {
                 return true;
             }
@@ -266,7 +267,9 @@ namespace RTSP.Core
         public bool IsEnabled()
         {
             // TODO: make a comment on HasOver.. that if it's overridden but set to null, we define this as not overridden.
-            return Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName");
+            //return Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName");
+
+            return this.StatePropertyName != null;
         }
 
         internal object GetPreviousValue(int age)

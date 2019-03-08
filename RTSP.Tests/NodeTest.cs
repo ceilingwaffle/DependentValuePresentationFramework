@@ -122,7 +122,7 @@
             {
                 var node2 = new DuplicateOverriddenStatePropertyNameNode();
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 Assert.Pass();
             }
@@ -141,7 +141,26 @@
             {
                 var node = new EmptyOverriddenStatePropertyNameNode();
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Expected ArgumentException but got Exception: {e.Message}.");
+            }
+
+            Assert.Fail($"Expected ArgumentException but got no Exception.");
+        }
+
+        [Test]
+        public void TestStatePropertyName_WhiteSpaceOverridden()
+        {
+            try
+            {
+                var node = new WhiteSpaceOverriddenStatePropertyNameNode();
+            }
+            catch (ArgumentException)
             {
                 Assert.Pass();
             }
@@ -215,6 +234,16 @@
     internal class EmptyOverriddenStatePropertyNameNode : Node
     {
         public override string StatePropertyName => "";
+
+        public override Task<object> DetermineValueAsync()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class WhiteSpaceOverriddenStatePropertyNameNode : Node
+    {
+        public override string StatePropertyName => "  ";
 
         public override Task<object> DetermineValueAsync()
         {
