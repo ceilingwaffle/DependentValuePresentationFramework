@@ -28,8 +28,16 @@ namespace RTSP.Core
                 {
                     continue;
                 }
+                
+                // only include this node's property name on the state if the name is defined
+                StatePropertyAttribute statePropertyAttribute = node.GetStatePropertyAttribute();
 
-                state[node.StatePropertyName] = node.GetValue();
+                if (statePropertyAttribute?.Name == null)
+                {
+                    continue;
+                }
+
+                state[statePropertyAttribute.Name] = node.GetValue();
             }
 
             return state;

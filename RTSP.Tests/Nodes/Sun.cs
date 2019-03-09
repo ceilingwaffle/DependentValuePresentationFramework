@@ -3,11 +3,12 @@ using System.Threading.Tasks;
 
 namespace RTSP.Tests.Nodes
 {
+    [StateProperty(enabled: false, name: "Sun")]
     internal class Sun : Node
     {
-        public override Task<object> DetermineValueAsync()
+        public override async Task<object> DetermineValueAsync()
         {
-            return Task.Run(() => { return new object(); });
+            return await Task.FromResult(new object());
         }
     }
 }

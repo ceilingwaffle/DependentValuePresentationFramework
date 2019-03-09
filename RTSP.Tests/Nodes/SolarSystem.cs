@@ -3,11 +3,12 @@ using RTSP.Core;
 
 namespace RTSP.Tests.Nodes
 {
+    [StateProperty(enabled: false, name: "SolarSystem")]
     internal class SolarSystem : Node
     {
-        public override Task<object> DetermineValueAsync()
+        public override async Task<object> DetermineValueAsync()
         {
-            return Task.Run(() => { return new object(); });
+            return await Task.FromResult(new object());
         }
     }
 }

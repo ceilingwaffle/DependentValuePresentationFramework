@@ -7,6 +7,19 @@ using System.Threading.Tasks;
 
 namespace RTSP.Core
 {
+    public class StatePropertyAttribute : Attribute
+    {
+        internal bool Enabled { get; private set; } = false;
+        internal string Name { get; private set; } = null;
+
+        public StatePropertyAttribute(bool enabled, string name)
+        {
+            Enabled = enabled;
+            Name = name;
+        }
+
+    }
+
     // TODO: Extract some code into NodeValidator
     // TODO: Extract some code into NodeUpdater
     public abstract class Node
@@ -23,7 +36,7 @@ namespace RTSP.Core
         /// The property name of this node's value on the State object.
         /// Will only be included on the State if this is overriden and is valid (see _IsValidStatePropertyName method)
         /// </summary>
-        public virtual string StatePropertyName { get; private set; } = null; //TODO: This should be protected, but it breaks TestEnabledNodes
+        //public virtual string StatePropertyName { get; private set; } = null; //TODO: This should be protected, but it breaks TestEnabledNodes
 
         private static HashSet<string> NodeStatePropertyNames { get; set; } = new HashSet<string>();
 
@@ -48,19 +61,32 @@ namespace RTSP.Core
         /// <returns></returns>
         private bool _IsValidStatePropertyName()
         {
-            if (StatePropertyName is null)
+            StatePropertyAttribute statePropertyAttribute = GetStatePropertyAttribute();
+
+            if (statePropertyAttribute?.Name is null)
             {
                 return true;
             }
 
-            return !string.IsNullOrWhiteSpace(StatePropertyName);
+            return !string.IsNullOrWhiteSpace(statePropertyAttribute.Name);
+        }
+
+        internal StatePropertyAttribute GetStatePropertyAttribute()
+        {
+            return (StatePropertyAttribute)Attribute.GetCustomAttribute(this.GetType(), typeof(StatePropertyAttribute));
         }
 
         private void _AddInitializedNode(Node node)
         {
             _ValidateNode(node);
 
-            NodeStatePropertyNames.Add(StatePropertyName);
+            StatePropertyAttribute statePropertyAttribute = GetStatePropertyAttribute();
+
+            if (statePropertyAttribute != null)
+            {
+                NodeStatePropertyNames.Add(statePropertyAttribute.Name);
+            }
+
             InitializedNodes.Add(this);
         }
 
@@ -75,8 +101,10 @@ namespace RTSP.Core
             if (!_IsValidStatePropertyName())
                 throw new ArgumentException($"StatePropertyName of node {node.GetType().ToString()} is invalid (must not be null, empty, or whitespace).");
 
-            if (StatePropertyName != null && NodeStatePropertyNames.Contains(StatePropertyName))
-                throw new ArgumentException($"Node {node.GetType().ToString()}: Another node already has a StatePropertyName of {StatePropertyName}. Must be unique.");
+            StatePropertyAttribute statePropertyAttribute = GetStatePropertyAttribute();
+
+            if (statePropertyAttribute?.Name != null && NodeStatePropertyNames.Contains(statePropertyAttribute?.Name))
+                throw new ArgumentException($"Node {node.GetType().ToString()}: Another node already has a StatePropertyName of {statePropertyAttribute?.Name}. Must be unique.");
         }
 
         internal static void ResetInitializedNodes()
@@ -264,7 +292,7 @@ namespace RTSP.Core
             // TODO: make a comment on HasOver.. that if it's overridden but set to null, we define this as not overridden.
             //return Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName");
 
-            return this.StatePropertyName != null;
+            return GetStatePropertyAttribute()?.Enabled == true;
         }
 
         internal object GetPreviousValue(int age)

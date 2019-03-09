@@ -99,7 +99,7 @@
         {
             try
             {
-                var node = new ValidOverriddenStatePropertyNameNode();
+                var node = new ValidEnabledStatePropertyNode();
             }
             catch (ArgumentException e)
             {
@@ -116,11 +116,11 @@
         [Test]
         public void TestStatePropertyName_DuplicateOverridden()
         {
-            var node = new ValidOverriddenStatePropertyNameNode();
+            var node = new ValidEnabledStatePropertyNode();
 
             try
             {
-                var node2 = new DuplicateOverriddenStatePropertyNameNode();
+                var node2 = new DuplicateNameStatePropertyNode();
             }
             catch (ArgumentException)
             {
@@ -139,7 +139,7 @@
         {
             try
             {
-                var node = new EmptyOverriddenStatePropertyNameNode();
+                var node = new EmptyNameStatePropertyNode();
             }
             catch (ArgumentException)
             {
@@ -158,7 +158,7 @@
         {
             try
             {
-                var node = new WhiteSpaceOverriddenStatePropertyNameNode();
+                var node = new WhiteSpaceNameStatePropertyNode();
             }
             catch (ArgumentException)
             {
@@ -177,7 +177,7 @@
         {
             try
             {
-                var node = new NullOverriddenStatePropertyNameNode();
+                var node = new NullNameStatePropertyNode();
             }
             catch (ArgumentException e)
             {
@@ -196,7 +196,7 @@
         {
             try
             {
-                var node = new NotOverriddenStatePropertyNameNode();
+                var node = new DisabledStatePropertyNode();
             }
             catch (ArgumentException e)
             {
@@ -211,57 +211,53 @@
         }
     }
 
-    class ValidOverriddenStatePropertyNameNode : Node
+    [StateProperty(enabled: true, name: "PropertyName")]
+    class ValidEnabledStatePropertyNode : Node
     {
-        public override string StatePropertyName => "PropertyName";
-
         public override Task<object> DetermineValueAsync()
         {
             throw new NotImplementedException();
         }
     }
 
-    class DuplicateOverriddenStatePropertyNameNode : Node
+    [StateProperty(enabled: true, name: "PropertyName")]
+    class DuplicateNameStatePropertyNode : Node
     {
-        public override string StatePropertyName => "PropertyName";
-
         public override Task<object> DetermineValueAsync()
         {
             throw new NotImplementedException();
         }
     }
 
-    internal class EmptyOverriddenStatePropertyNameNode : Node
+    [StateProperty(enabled: true, name: "")]
+    internal class EmptyNameStatePropertyNode : Node
     {
-        public override string StatePropertyName => "";
-
         public override Task<object> DetermineValueAsync()
         {
             throw new NotImplementedException();
         }
     }
 
-    internal class WhiteSpaceOverriddenStatePropertyNameNode : Node
+    [StateProperty(enabled: true, name: "  ")]
+    internal class WhiteSpaceNameStatePropertyNode : Node
     {
-        public override string StatePropertyName => "  ";
-
         public override Task<object> DetermineValueAsync()
         {
             throw new NotImplementedException();
         }
     }
 
-    internal class NullOverriddenStatePropertyNameNode : Node
+    [StateProperty(enabled: true, name: null)]
+    internal class NullNameStatePropertyNode : Node
     {
-        public override string StatePropertyName => null;
-
         public override Task<object> DetermineValueAsync()
         {
             throw new NotImplementedException();
         }
     }
 
-    internal class NotOverriddenStatePropertyNameNode : Node
+    [StateProperty(enabled: false, name: "HopefullyNotEnabled")]
+    internal class DisabledStatePropertyNode : Node
     {
         public override Task<object> DetermineValueAsync()
         {

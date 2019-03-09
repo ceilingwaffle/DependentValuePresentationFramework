@@ -108,8 +108,8 @@ namespace RTSP.Tests
         [Test]
         public void TestEnabledNodes()
         {
-            var shouldBeEnabled = new ValidOverriddenStatePropertyNameNode();
-            var shouldNotBeEnabled = new NotOverriddenStatePropertyNameNode();
+            var shouldBeEnabled = new ValidEnabledStatePropertyNode();
+            var shouldNotBeEnabled = new DisabledStatePropertyNode();
 
             NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
             NodeCollection enabledNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectEnabledNodes", initializedNodes);
