@@ -9,10 +9,6 @@
     [TestFixture]
     public class NodeTest
     {
-        /// <summary>
-        /// Initializes Node test objects
-        /// </summary>
-        /// 
         [SetUp]
         protected void SetUp()
         {
@@ -94,121 +90,6 @@
             Assert.Fail("Expected ArgumentException (initializing the same node types should not be allowed.");
         }
 
-        [Test]
-        public void TestStatePropertyName_ValidOverridden()
-        {
-            try
-            {
-                var node = new ValidEnabledStatePropertyNode();
-            }
-            catch (ArgumentException e)
-            {
-                Assert.Fail($"Expected no ArgumentException but got: {e.Message}.");
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected no Exception but got: {e.Message}.");
-            }
-
-            Assert.Pass();
-        }
-
-        [Test]
-        public void TestStatePropertyName_DuplicateOverridden()
-        {
-            var node = new ValidEnabledStatePropertyNode();
-
-            try
-            {
-                var node2 = new DuplicateNameStatePropertyNode();
-            }
-            catch (ArgumentException)
-            {
-                Assert.Pass();
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected ArgumentException but got Exception: {e.Message}.");
-            }
-
-            Assert.Fail($"Expected ArgumentException but got no Exception.");
-        }
-
-        [Test]
-        public void TestStatePropertyName_EmptyOverridden()
-        {
-            try
-            {
-                var node = new EmptyNameStatePropertyNode();
-            }
-            catch (ArgumentException)
-            {
-                Assert.Pass();
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected ArgumentException but got Exception: {e.Message}.");
-            }
-
-            Assert.Fail($"Expected ArgumentException but got no Exception.");
-        }
-
-        [Test]
-        public void TestStatePropertyName_WhiteSpaceOverridden()
-        {
-            try
-            {
-                var node = new WhiteSpaceNameStatePropertyNode();
-            }
-            catch (ArgumentException)
-            {
-                Assert.Pass();
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected ArgumentException but got Exception: {e.Message}.");
-            }
-
-            Assert.Fail($"Expected ArgumentException but got no Exception.");
-        }
-
-        [Test]
-        public void TestStatePropertyName_NullOverridden()
-        {
-            try
-            {
-                var node = new NullNameStatePropertyNode();
-            }
-            catch (ArgumentException e)
-            {
-                Assert.Fail($"Expected no ArgumentException but got: {e.Message}.");
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected no Exception but got: {e.Message}.");
-            }
-
-            Assert.Pass();
-        }
-
-        [Test]
-        public void TestStatePropertyName_NotOverridden()
-        {
-            try
-            {
-                var node = new DisabledStatePropertyNode();
-            }
-            catch (ArgumentException e)
-            {
-                Assert.Fail($"Expected no ArgumentException but got: {e.Message}.");
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected no Exception but got: {e.Message}.");
-            }
-
-            Assert.Pass();
-        }
     }
 
     [StateProperty(enabled: true, name: "PropertyName")]
@@ -230,7 +111,7 @@
     }
 
     [StateProperty(enabled: true, name: "")]
-    internal class EmptyNameStatePropertyNode : Node
+    internal class EmptyStringNameStatePropertyNode : Node
     {
         public override Task<object> DetermineValueAsync()
         {
@@ -258,6 +139,14 @@
 
     [StateProperty(enabled: false, name: "HopefullyNotEnabled")]
     internal class DisabledStatePropertyNode : Node
+    {
+        public override Task<object> DetermineValueAsync()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class AttributeNotDefinedStatePropertyNode : Node
     {
         public override Task<object> DetermineValueAsync()
         {

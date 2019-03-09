@@ -7,19 +7,6 @@ using System.Threading.Tasks;
 
 namespace RTSP.Core
 {
-    public class StatePropertyAttribute : Attribute
-    {
-        internal bool Enabled { get; private set; } = false;
-        internal string Name { get; private set; } = null;
-
-        public StatePropertyAttribute(bool enabled, string name)
-        {
-            Enabled = enabled;
-            Name = name;
-        }
-
-    }
-
     // TODO: Extract some code into NodeValidator
     // TODO: Extract some code into NodeUpdater
     public abstract class Node

@@ -49,6 +49,7 @@
     <Compile Include="NodeSupervisor.cs" />
     <Compile Include="StatePresenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StatePropertyAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

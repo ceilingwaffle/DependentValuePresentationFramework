@@ -66,6 +66,7 @@
     <Compile Include="Nodes\LMC.cs" />
     <Compile Include="NodeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StatePropertyAttributeTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
