@@ -23,10 +23,4 @@ namespace RTSP.Core
 
     }
 
-    internal enum LogCategory
-    {
-        Event,
-        ValueChanged,
-
-    }
 }

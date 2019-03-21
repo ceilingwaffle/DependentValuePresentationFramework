@@ -79,7 +79,7 @@ namespace RTSP.Core
                 {
                     if (_updateTaskCTS.IsCancellationRequested)
                     {
-                        _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.", LogCategory.Event, this);
+                        _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.");
                         return;
                     }
 
@@ -118,11 +118,11 @@ namespace RTSP.Core
                     child.TaskManager._updateTaskCTS.Cancel();
                 }
 
-                _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).", LogCategory.ValueChanged, this);
+                _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
             }
             else
             {
-                _logger.Debug($"{_node.T()} Value was same: ({_node.GetPreviousValue()} -> {_node.GetValue()}).", LogCategory.ValueChanged, this);
+                _logger.Debug($"{_node.T()} Value was same: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
             }
         }
 
