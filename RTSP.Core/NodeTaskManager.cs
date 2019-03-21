@@ -73,7 +73,7 @@ namespace RTSP.Core
                 //    $"{_node.T()}_updateTask already running (_updateTask?.Status == TaskStatus.Running).");
             }
 
-            if (_updateTask == null)
+            if (_updateTask == null || _updateTask.IsCanceled)
             {
                 _updateTask = Task.Run(async () =>
                 {
@@ -114,8 +114,12 @@ namespace RTSP.Core
                 // So issue a cancel to all child update tasks.
                 foreach (var child in _node.Children)
                 {
-                    _logger.Debug($"{_node.T()} Issuing cancel to child {child.T()}...");
-                    child.TaskManager._updateTaskCTS.Cancel();
+                    if (child.TaskManager.GetUpdateTaskStatus() == TaskStatus.Running)
+                    {
+                        _logger.Debug($"{_node.T()} Issuing cancel to running child {child.T()}...");
+                        child.TaskManager._updateTaskCTS.Cancel();
+                    }
+
                 }
 
                 _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");

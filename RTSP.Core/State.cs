@@ -33,7 +33,7 @@ namespace RTSP.Core
         {
             return string.Join(
                 System.Environment.NewLine,
-                Properties.Select(p => $"{p.Key, 15}: {p.Value.ToString()}")
+                Properties.Select(p => $"{p.Key, 15}: {p.Value?.ToString()}")
             );
         }
     }

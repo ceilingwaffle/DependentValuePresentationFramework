@@ -28,14 +28,9 @@ namespace RTSP.Core
         {
             NodeSupervisor.BuildNodeCollections();
 
-            var cts = new CancellationTokenSource();
-
             while (true)
             {
                 _logger.Debug("------------------------------------------------------");
-
-                if (cts.IsCancellationRequested)
-                    return;
 
                 //var leafNodes = NodeSupervisor.LeafNodes;
                 var presentationEnabledNodes = NodeSupervisor.GetEnabledNodes();
