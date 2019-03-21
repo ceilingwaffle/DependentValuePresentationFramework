@@ -40,10 +40,10 @@ namespace RTSP.Core
 
                 foreach (var node in presentationEnabledNodes)
                 {
-                    if (node.GetUpdateTaskStatus() != TaskStatus.Running)
+                    if (node.TaskManager.GetUpdateTaskStatus() != TaskStatus.Running)
                     {
                         Debug.WriteLine($"{node.T()} UpdateAsync() START...");
-                        node.UpdateAsync().ConfigureAwait(false);
+                        node.TaskManager.UpdateAsync().ConfigureAwait(false);
                     }
                     else
                     {

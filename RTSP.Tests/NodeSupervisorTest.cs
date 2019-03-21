@@ -31,79 +31,79 @@ namespace RTSP.Tests
 
         }
 
-        [Test]
-        public void TestRootNodesAreRoots()
-        {
-            // setup
-            var LMC = new LMC();
-            var MilkyWay = new MilkyWay();
-            var Andromeda = new Andromeda();
-            var SolarSystem = new SolarSystem();
-            var Sun = new Sun();
-            var Earth = new Earth();
-            var Jupiter = new Jupiter();
-            var Oumuamua = new Oumuamua();
-            var HalleysComet = new HalleysComet();
+        //[Test]
+        //public void TestRootNodesAreRoots()
+        //{
+        //    // setup
+        //    var LMC = new LMC();
+        //    var MilkyWay = new MilkyWay();
+        //    var Andromeda = new Andromeda();
+        //    var SolarSystem = new SolarSystem();
+        //    var Sun = new Sun();
+        //    var Earth = new Earth();
+        //    var Jupiter = new Jupiter();
+        //    var Oumuamua = new Oumuamua();
+        //    var HalleysComet = new HalleysComet();
 
-            MilkyWay.AddChildren(SolarSystem);
-            Andromeda.AddChildren(Oumuamua);
-            SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
-            Sun.AddChildren(HalleysComet);
-            Earth.AddChildren(HalleysComet);
+        //    MilkyWay.AddChildren(SolarSystem);
+        //    Andromeda.AddChildren(Oumuamua);
+        //    SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
+        //    Sun.AddChildren(HalleysComet);
+        //    Earth.AddChildren(HalleysComet);
 
-            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
+        //    NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+        //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
 
-            // expected
-            var expectedRoots = new NodeCollection(LMC, MilkyWay, Andromeda);
-            var emptyCollection = new NodeCollection();
+        //    // expected
+        //    var expectedRoots = new NodeCollection(LMC, MilkyWay, Andromeda);
+        //    var emptyCollection = new NodeCollection();
 
-            // assertions
-            var returnedRoots = rootNodes;
+        //    // assertions
+        //    var returnedRoots = rootNodes;
 
-            CollectionAssert.AreNotEquivalent(returnedRoots.ToList(), emptyCollection.ToList());
-            Assert.GreaterOrEqual(returnedRoots.Count(), 1);
-            Assert.AreEqual(returnedRoots.Count(), expectedRoots.Count());
-            // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
-            CollectionAssert.AreEquivalent(returnedRoots.ToList(), expectedRoots.ToList());
-        }
+        //    CollectionAssert.AreNotEquivalent(returnedRoots.ToList(), emptyCollection.ToList());
+        //    Assert.GreaterOrEqual(returnedRoots.Count(), 1);
+        //    Assert.AreEqual(returnedRoots.Count(), expectedRoots.Count());
+        //    // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
+        //    CollectionAssert.AreEquivalent(returnedRoots.ToList(), expectedRoots.ToList());
+        //}
 
-        [Test]
-        public void TestLeafNodesAreLeaves()
-        {
-            // setup
-            var LMC = new LMC();
-            var MilkyWay = new MilkyWay();
-            var Andromeda = new Andromeda();
-            var SolarSystem = new SolarSystem();
-            var Sun = new Sun();
-            var Earth = new Earth();
-            var Jupiter = new Jupiter();
-            var Oumuamua = new Oumuamua();
-            var HalleysComet = new HalleysComet();
+        //[Test]
+        //public void TestLeafNodesAreLeaves()
+        //{
+        //    // setup
+        //    var LMC = new LMC();
+        //    var MilkyWay = new MilkyWay();
+        //    var Andromeda = new Andromeda();
+        //    var SolarSystem = new SolarSystem();
+        //    var Sun = new Sun();
+        //    var Earth = new Earth();
+        //    var Jupiter = new Jupiter();
+        //    var Oumuamua = new Oumuamua();
+        //    var HalleysComet = new HalleysComet();
 
-            MilkyWay.AddChildren(SolarSystem);
-            Andromeda.AddChildren(Oumuamua);
-            SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
-            Sun.AddChildren(HalleysComet);
-            Earth.AddChildren(HalleysComet);
+        //    MilkyWay.AddChildren(SolarSystem);
+        //    Andromeda.AddChildren(Oumuamua);
+        //    SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
+        //    Sun.AddChildren(HalleysComet);
+        //    Earth.AddChildren(HalleysComet);
 
-            //_nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
-            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-            NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
-            NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
+        //    //_nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
+        //    NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+        //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
+        //    NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
 
-            // expected
-            var expectedLeaves = new NodeCollection(LMC, Jupiter, Oumuamua, HalleysComet);
-            var emptyCollection = new NodeCollection();
+        //    // expected
+        //    var expectedLeaves = new NodeCollection(LMC, Jupiter, Oumuamua, HalleysComet);
+        //    var emptyCollection = new NodeCollection();
 
-            // assertions
-            CollectionAssert.AreNotEquivalent(returnedLeaves.ToList(), emptyCollection.ToList());
-            Assert.GreaterOrEqual(returnedLeaves.Count(), 1);
-            Assert.AreEqual(returnedLeaves.Count(), expectedLeaves.Count());
-            // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
-            CollectionAssert.AreEquivalent(returnedLeaves.ToList(), expectedLeaves.ToList());
-        }
+        //    // assertions
+        //    CollectionAssert.AreNotEquivalent(returnedLeaves.ToList(), emptyCollection.ToList());
+        //    Assert.GreaterOrEqual(returnedLeaves.Count(), 1);
+        //    Assert.AreEqual(returnedLeaves.Count(), expectedLeaves.Count());
+        //    // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
+        //    CollectionAssert.AreEquivalent(returnedLeaves.ToList(), expectedLeaves.ToList());
+        //}
 
         [Test]
         public void TestEnabledNodes()
@@ -118,72 +118,72 @@ namespace RTSP.Tests
             CollectionAssert.DoesNotContain(enabledNodes, shouldNotBeEnabled);
         }
 
-        [Test]
-        public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()
-        {
-            int iterations = 10000;
+        //[Test]
+        //public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()
+        //{
+        //    int iterations = 10000;
 
-            // assert minimum 3 iterations because we need parent, child, grandchild minimum
-            Assert.GreaterOrEqual(iterations, 3);
+        //    // assert minimum 3 iterations because we need parent, child, grandchild minimum
+        //    Assert.GreaterOrEqual(iterations, 3);
 
-            try
-            {
-                var dynamicNodes = new List<Node>();
+        //    try
+        //    {
+        //        var dynamicNodes = new List<Node>();
 
-                for (int i = 0; i < iterations; i++)
-                {
-                    Node n = CreateDynamicNode();
-                    dynamicNodes.Add(n);
+        //        for (int i = 0; i < iterations; i++)
+        //        {
+        //            Node n = CreateDynamicNode();
+        //            dynamicNodes.Add(n);
 
-                    if (i > 0)
-                    {
-                        var parent = dynamicNodes[i - 1];
+        //            if (i > 0)
+        //            {
+        //                var parent = dynamicNodes[i - 1];
 
-                        parent?.AddChildren(n);
-                    }
-                }
+        //                parent?.AddChildren(n);
+        //            }
+        //        }
 
-                // assert expected number of dynamic nodes created
-                Assert.AreEqual(dynamicNodes.Count, iterations);
+        //        // assert expected number of dynamic nodes created
+        //        Assert.AreEqual(dynamicNodes.Count, iterations);
 
-                // assert parent, child, grandchild are not null
-                Node p = dynamicNodes[0];
-                Node c = dynamicNodes[1];
-                Node gc = dynamicNodes[2];
-                Assert.IsNotNull(p);
-                Assert.IsNotNull(c);
-                Assert.IsNotNull(gc);
+        //        // assert parent, child, grandchild are not null
+        //        Node p = dynamicNodes[0];
+        //        Node c = dynamicNodes[1];
+        //        Node gc = dynamicNodes[2];
+        //        Assert.IsNotNull(p);
+        //        Assert.IsNotNull(c);
+        //        Assert.IsNotNull(gc);
 
-                // assert that the first node is the second node's parent
-                Node expectedParent = null;
-                c?.Parents?.TryGetValue(p.GetType(), out expectedParent);
-                Assert.IsNotNull(expectedParent);
-                Assert.AreEqual(p, expectedParent);
+        //        // assert that the first node is the second node's parent
+        //        Node expectedParent = null;
+        //        c?.Parents?.TryGetValue(p.GetType(), out expectedParent);
+        //        Assert.IsNotNull(expectedParent);
+        //        Assert.AreEqual(p, expectedParent);
 
-                // assert that the grandparent of grandchild is not the parent of grandchild
-                Node expectedParentOfGC = null;
-                gc?.Parents?.TryGetValue(c.GetType(), out expectedParentOfGC);
-                Assert.IsNotNull(expectedParentOfGC);
-                Assert.AreNotEqual(p, expectedParentOfGC);
+        //        // assert that the grandparent of grandchild is not the parent of grandchild
+        //        Node expectedParentOfGC = null;
+        //        gc?.Parents?.TryGetValue(c.GetType(), out expectedParentOfGC);
+        //        Assert.IsNotNull(expectedParentOfGC);
+        //        Assert.AreNotEqual(p, expectedParentOfGC);
 
-                // stack overflow test on thousands of descendents
-                var rootNode = dynamicNodes[0];
-                //_nodeSupervisor.AddRootNodes(rootNode);
-                NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-                NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
-                NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
+        //        // stack overflow test on thousands of descendents
+        //        var rootNode = dynamicNodes[0];
+        //        //_nodeSupervisor.AddRootNodes(rootNode);
+        //        NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+        //        NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
+        //        NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
 
-                NodeCollection returnedLeaves = leafNodes;
-            }
-            catch (StackOverflowException e)
-            {
-                Assert.Fail($"Expected no StackOverflowException, but got: {e.Message}.");
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Expected no Exception, but got: {e.Message}.");
-            }
-        }
+        //        NodeCollection returnedLeaves = leafNodes;
+        //    }
+        //    catch (StackOverflowException e)
+        //    {
+        //        Assert.Fail($"Expected no StackOverflowException, but got: {e.Message}.");
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Assert.Fail($"Expected no Exception, but got: {e.Message}.");
+        //    }
+        //}
 
         /// <summary>
         /// Returns an instance of a "dynamic" Node object (derived from the abstract Node class) with a unique class name.

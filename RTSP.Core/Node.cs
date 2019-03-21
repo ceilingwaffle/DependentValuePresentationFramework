@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace RTSP.Core
@@ -14,10 +13,6 @@ namespace RTSP.Core
         private readonly object _valueLock = new object();
         private LinkedList<object> _valueLedger;
 
-        private Task _updateTask;
-        private CancellationTokenSource _updateTaskCTS;
-        // TODO: Load this from config
-        private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
 
         /// <summary>
         /// The property name of this node's value on the State object.
@@ -33,9 +28,14 @@ namespace RTSP.Core
 
         public static object tempValue;
 
+        internal readonly NodeTaskManager TaskManager;
+
         public Node()
         {
-            _ResetUpdateTaskCTS();
+            TaskManager = new NodeTaskManager(this);
+
+            TaskManager.ResetUpdateTaskCTS();
+
             _InitValueLedger();
             _AddInitializedNode(this);
         }
@@ -104,15 +104,6 @@ namespace RTSP.Core
             NodeStatePropertyNames = new HashSet<string>();
         }
 
-        private void _ResetUpdateTaskCTS()
-        {
-            if (_updateTaskCTS != null)
-                _updateTaskCTS.Dispose();
-
-            _updateTaskCTS = new CancellationTokenSource();
-            Debug.WriteLine($"{T()} _ResetUpdateTaskCTS().");
-        }
-
         private void _InitValueLedger()
         {
             var capacity = 2;
@@ -145,118 +136,16 @@ namespace RTSP.Core
             return Parents.Count() > 0;
         }
 
-        internal async Task UpdateAsync()
-        {
-            var updateTask = GetUpdateTask();
+        
 
-            if (updateTask.IsCanceled)
-            {
-                Debug.WriteLine($"{T()} task is cancelled");
-                return;
-            }
-
-            await updateTask.ConfigureAwait(false);
-
-            Debug.WriteLine($"{T()} task completed.");
-
-            if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
-            {
-                _DisposeUpdateTask();
-                _ResetUpdateTaskCTS();
-            }
-        }
-
-        private Task GetUpdateTask()
-        {
-            Debug.WriteLineIf(_updateTask != null,
-                $"{T()}_updateTask already running (_updateTask != null).");
-
-            Debug.WriteLineIf(_updateTask?.Status == TaskStatus.Running,
-                $"{T()}_updateTask already running (_updateTask?.Status == TaskStatus.Running).");
-
-            if (_updateTask == null)
-            {
-                _updateTask = Task.Run(async () =>
-                {
-                    if (_updateTaskCTS.IsCancellationRequested)
-                    {
-                        Debug.WriteLine($"{T()} Cancellation was requested. Not continuing with calc/data fetching.", LogCategory.Event, this);
-                        return;
-                    }
-
-                    Task.WaitAll(_GetParentUpdateTasks());
-
-                    // TODO: calculate value
-                    var value = await DetermineValueAsync();
-                    _SetValue(value);
-
-                    if (_ValueChanged())
-                    {
-                        // This Node's value changed, meaning all child node values are now potentially expired.
-                        // So issue a cancel to all child update tasks.
-                        foreach (var child in Children)
-                        {
-                            Debug.WriteLine($"{T()} Issuing cancel to child {child.T()}...");
-                            child._updateTaskCTS.Cancel();
-                        }
-
-                        Debug.WriteLine($"{T()} Value changed: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"{T()} Value was same: ({GetPreviousValue()} -> {GetValue()}).", LogCategory.ValueChanged, this);
-                    }
-
-                }, _updateTaskCTS.Token);
-            }
-
-            return _updateTask;
-        }
-
-        private Task[] _GetParentUpdateTasks()
-        {
-            var parents = Parents.ToArray();
-            var parentTasks = new Task[Parents.Count()];
-
-            for (int i = 0; i < Parents.Count(); i++)
-            {
-                var parent = parents[i];
-
-                if (parent is null)
-                    continue;
-
-                parentTasks[i] = parent.UpdateAsync();
-            }
-
-            return parentTasks;
-        }
-
-        internal TaskStatus GetUpdateTaskStatus()
-        {
-            if (_updateTask == null)
-            {
-                // TODO: Something else like a custom UpdateTaskStatus class which extends TaskStatus but has a custom null status.
-                return TaskStatus.WaitingToRun;
-            }
-
-            return _updateTask.Status;
-        }
-
-        private void _DisposeUpdateTask()
-        {
-            if (_updateTask != null)
-            {
-                _updateTask = null;
-                Debug.WriteLine($"{T()} _DisposeUpdateTask().");
-            }
-        }
+        
 
         /// <summary>
         /// Insert at index 0 on ledger.
         /// If the given value is null, set value at index 0 to null without modifying the previous value.
         /// </summary>
         /// <param name="v"></param>
-        private bool _SetValue(object v)
+        internal bool SetValue(object v)
         {
             lock (_valueLock)
             {
@@ -314,11 +203,11 @@ namespace RTSP.Core
         {
             if (GetValue() != null)
             {
-                _SetValue(null);
+                SetValue(null);
             }
         }
 
-        private bool _ValueChanged()
+        internal bool ValueChanged()
         {
             var current = GetPreviousValue(age: 0);
             var previous = GetPreviousValue(age: 1);

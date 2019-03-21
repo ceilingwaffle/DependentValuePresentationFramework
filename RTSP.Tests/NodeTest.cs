@@ -9,6 +9,8 @@
     [TestFixture]
     public class NodeTest
     {
+        // TODO: Write test for ensuring disabled nodes do not call their CalculateValue() methods
+
         [SetUp]
         protected void SetUp()
         {
