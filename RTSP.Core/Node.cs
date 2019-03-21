@@ -136,10 +136,6 @@ namespace RTSP.Core
             return Parents.Count() > 0;
         }
 
-        
-
-        
-
         /// <summary>
         /// Insert at index 0 on ledger.
         /// If the given value is null, set value at index 0 to null without modifying the previous value.
@@ -181,9 +177,6 @@ namespace RTSP.Core
 
         public bool IsEnabled()
         {
-            // TODO: make a comment on HasOver.. that if it's overridden but set to null, we define this as not overridden.
-            //return Helpers.HasOverriddenProperty(this.GetType(), "StatePropertyName");
-
             return GetStatePropertyAttribute()?.Enabled == true;
         }
 
