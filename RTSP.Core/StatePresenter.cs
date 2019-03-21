@@ -35,9 +35,10 @@ namespace RTSP.Core
                 if (cts.IsCancellationRequested)
                     return;
 
-                var leafNodes = NodeSupervisor.LeafNodes;
+                //var leafNodes = NodeSupervisor.LeafNodes;
+                var presentationEnabledNodes = NodeSupervisor.GetEnabledNodes();
 
-                foreach (var node in leafNodes)
+                foreach (var node in presentationEnabledNodes)
                 {
                     if (node.GetUpdateTaskStatus() != TaskStatus.Running)
                     {
