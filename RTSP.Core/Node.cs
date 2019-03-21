@@ -157,6 +157,8 @@ namespace RTSP.Core
 
             await updateTask.ConfigureAwait(false);
 
+            Debug.WriteLine($"{T()} task completed.");
+
             if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
             {
                 _DisposeUpdateTask();
@@ -182,11 +184,7 @@ namespace RTSP.Core
                         return;
                     }
 
-                    foreach (var parent in Parents)
-                    {
-                        await parent.UpdateAsync().ConfigureAwait(false);
-                    }
-
+                    Task.WaitAll(_GetParentUpdateTasks());
 
                     // TODO: calculate value
                     var value = await DetermineValueAsync();
@@ -213,6 +211,24 @@ namespace RTSP.Core
             }
 
             return _updateTask;
+        }
+
+        private Task[] _GetParentUpdateTasks()
+        {
+            var parents = Parents.ToArray();
+            var parentTasks = new Task[Parents.Count()];
+
+            for (int i = 0; i < Parents.Count(); i++)
+            {
+                var parent = parents[i];
+
+                if (parent is null)
+                    continue;
+
+                parentTasks[i] = parent.UpdateAsync();
+            }
+
+            return parentTasks;
         }
 
         internal TaskStatus GetUpdateTaskStatus()
