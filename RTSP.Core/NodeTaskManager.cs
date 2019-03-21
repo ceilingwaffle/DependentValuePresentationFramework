@@ -8,6 +8,8 @@ namespace RTSP.Core
 {
     internal class NodeTaskManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// The node being managed.
         /// </summary>
@@ -30,7 +32,7 @@ namespace RTSP.Core
                 _updateTaskCTS.Dispose();
 
             _updateTaskCTS = new CancellationTokenSource();
-            Debug.WriteLine($"{_node.T()} _ResetUpdateTaskCTS().");
+            _logger.Debug($"{_node.T()} _ResetUpdateTaskCTS().");
         }
 
         internal async Task UpdateAsync()
@@ -39,16 +41,16 @@ namespace RTSP.Core
 
             if (updateTask.IsCanceled)
             {
-                Debug.WriteLine($"{_node.T()} task is cancelled");
+                _logger.Debug($"{_node.T()} task is cancelled");
                 return;
             }
 
             await updateTask.ConfigureAwait(false);
 
-            Debug.WriteLine($"{_node.T()} task completed.");
-
             if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
             {
+                _logger.Debug($"{_node.T()} task status: {_updateTask.Status.ToString()}");
+
                 _DisposeUpdateTask();
                 ResetUpdateTaskCTS();
             }
@@ -56,11 +58,20 @@ namespace RTSP.Core
 
         private Task GetUpdateTask()
         {
-            Debug.WriteLineIf(_updateTask != null,
-                $"{_node.T()}_updateTask already running (_updateTask != null).");
+            if (_updateTask != null)
+            {
+                _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
+                //Debug.WriteLineIf(_updateTask != null,
+                //    $"{_node.T()}_updateTask already running (_updateTask != null).");
+            }
 
-            Debug.WriteLineIf(_updateTask?.Status == TaskStatus.Running,
-                $"{_node.T()}_updateTask already running (_updateTask?.Status == TaskStatus.Running).");
+            if (_updateTask?.Status == TaskStatus.Running)
+            {
+                _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
+
+                //Debug.WriteLineIf(_updateTask?.Status == TaskStatus.Running,
+                //    $"{_node.T()}_updateTask already running (_updateTask?.Status == TaskStatus.Running).");
+            }
 
             if (_updateTask == null)
             {
@@ -68,16 +79,26 @@ namespace RTSP.Core
                 {
                     if (_updateTaskCTS.IsCancellationRequested)
                     {
-                        Debug.WriteLine($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.", LogCategory.Event, this);
+                        _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.", LogCategory.Event, this);
                         return;
                     }
 
-                    Task.WaitAll(_GetParentUpdateTasks());
+                    foreach (var parent in _node.Parents)
+                    {
+                        _logger.Debug($"{_node.T()} requesting update from parent: {parent.GetType().ToString()}");
+                        await parent.TaskManager.UpdateAsync();
+                    }
+
+                    //Task.WaitAll(_GetParentUpdateTasks());
 
                     // TODO: calculate value
                     var value = await _node.DetermineValueAsync();
                     _node.SetValue(value);
+
+                    // TODO: Need to cancel all children of children also (not just direct children)
                     _CancelChildTasksIfValueUpdated();
+
+                    _logger.Debug($"{_node.T()}updateTask completed.");
 
                 }, _updateTaskCTS.Token);
             }
@@ -93,15 +114,15 @@ namespace RTSP.Core
                 // So issue a cancel to all child update tasks.
                 foreach (var child in _node.Children)
                 {
-                    Debug.WriteLine($"{_node.T()} Issuing cancel to child {child.T()}...");
+                    _logger.Debug($"{_node.T()} Issuing cancel to child {child.T()}...");
                     child.TaskManager._updateTaskCTS.Cancel();
                 }
 
-                Debug.WriteLine($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).", LogCategory.ValueChanged, this);
+                _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).", LogCategory.ValueChanged, this);
             }
             else
             {
-                Debug.WriteLine($"{_node.T()} Value was same: ({_node.GetPreviousValue()} -> {_node.GetValue()}).", LogCategory.ValueChanged, this);
+                _logger.Debug($"{_node.T()} Value was same: ({_node.GetPreviousValue()} -> {_node.GetValue()}).", LogCategory.ValueChanged, this);
             }
         }
 
@@ -139,7 +160,7 @@ namespace RTSP.Core
             if (_updateTask != null)
             {
                 _updateTask = null;
-                Debug.WriteLine($"{_node.T()} _DisposeUpdateTask().");
+                _logger.Debug($"{_node.T()} _DisposeUpdateTask().");
             }
         }
 

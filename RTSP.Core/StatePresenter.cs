@@ -8,6 +8,8 @@ namespace RTSP.Core
 {
     public class StatePresenter
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public NodeSupervisor NodeSupervisor { get; private set; }
         private readonly StateBuilder _stateBuilder;
         private readonly List<Action<State>> _eventHandlers_NewState;
@@ -30,7 +32,7 @@ namespace RTSP.Core
 
             while (true)
             {
-                Debug.WriteLine("------------------------------------------------------");
+                _logger.Debug("------------------------------------------------------");
 
                 if (cts.IsCancellationRequested)
                     return;
@@ -42,12 +44,12 @@ namespace RTSP.Core
                 {
                     if (node.TaskManager.GetUpdateTaskStatus() != TaskStatus.Running)
                     {
-                        Debug.WriteLine($"{node.T()} UpdateAsync() START...");
+                        _logger.Debug($"{node.T()} UpdateAsync() START...");
                         node.TaskManager.UpdateAsync().ConfigureAwait(false);
                     }
                     else
                     {
-                        Debug.WriteLine($"{node.T()} -----------UpdateAsync() ALREADY RUNNING.");
+                        _logger.Debug($"{node.T()} -----------UpdateAsync() ALREADY RUNNING.");
                     }
 
                 }

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace RTSP.Core
 {
-    // TODO: Extract some code into NodeValidator
-    // TODO: Extract some code into NodeUpdater
     public abstract class Node
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly object _valueLock = new object();
         private LinkedList<object> _valueLedger;
         internal readonly NodeTaskManager TaskManager;
@@ -143,7 +143,9 @@ namespace RTSP.Core
                 if (v == null)
                 {
                     _valueLedger.AddFirst(new LinkedListNode<object>(null));
-                    Debug.WriteLine($"{T()} Value set to NULL.");
+
+                    _logger.Debug($"{T()} Value set to NULL.");
+                    //Debug.WriteLine($"{T()} Value set to NULL.");
                     return false;
                 }
 
@@ -152,7 +154,9 @@ namespace RTSP.Core
                 while (_valueLedger.Count > capacity)
                     _valueLedger.RemoveLast();
 
-                Debug.WriteLine($"{T()} Value set to {v} (ledger count {_valueLedger.Count}).");
+                //Debug.WriteLine($"{T()} Value set to {v} (ledger count {_valueLedger.Count}).");
+                _logger.Debug("{0} Value set to {1} (ledger count {2}).", T(), v, _valueLedger.Count);
+
                 return true;
             }
         }
