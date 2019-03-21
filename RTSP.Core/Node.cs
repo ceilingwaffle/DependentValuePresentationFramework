@@ -12,22 +12,6 @@ namespace RTSP.Core
     {
         private readonly object _valueLock = new object();
         private LinkedList<object> _valueLedger;
-
-
-        /// <summary>
-        /// The property name of this node's value on the State object.
-        /// Will only be included on the State if this is overriden and is valid (see _IsValidStatePropertyName method)
-        /// </summary>
-        //public virtual string StatePropertyName { get; private set; } = null; //TODO: This should be protected, but it breaks TestEnabledNodes
-
-        private static HashSet<string> NodeStatePropertyNames { get; set; } = new HashSet<string>();
-
-        public NodeCollection Children { get; } = new NodeCollection();
-        public NodeCollection Parents { get; } = new NodeCollection();
-        internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
-
-        public static object tempValue;
-
         internal readonly NodeTaskManager TaskManager;
 
         public Node()
@@ -37,8 +21,17 @@ namespace RTSP.Core
             TaskManager.ResetUpdateTaskCTS();
 
             _InitValueLedger();
+
             _AddInitializedNode(this);
         }
+
+        private static HashSet<string> NodeStatePropertyNames { get; set; } = new HashSet<string>();
+
+        public NodeCollection Children { get; } = new NodeCollection();
+
+        public NodeCollection Parents { get; } = new NodeCollection();
+
+        internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
 
         public abstract Task<object> DetermineValueAsync();
 
@@ -162,7 +155,6 @@ namespace RTSP.Core
                 Debug.WriteLine($"{T()} Value set to {v} (ledger count {_valueLedger.Count}).");
                 return true;
             }
-
         }
 
         public object GetValue()
@@ -186,7 +178,6 @@ namespace RTSP.Core
             {
                 return _valueLedger.ElementAt(age);
             }
-
         }
 
         /// <summary>
