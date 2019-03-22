@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -108,45 +109,79 @@ namespace RTSP.Core
 
         private void _CancelChildTasksIfValueUpdated()
         {
-            if (_node.ValueChanged())
-            {
-                // This Node's value changed, meaning all child node values are now potentially expired.
-                // So issue a cancel to all child update tasks.
-                foreach (var child in _node.Children)
-                {
-                    if (child.TaskManager.GetUpdateTaskStatus() == TaskStatus.Running)
-                    {
-                        _logger.Debug($"{_node.T()} Issuing cancel to running child {child.T()}...");
-                        child.TaskManager._updateTaskCTS.Cancel();
-                    }
-
-                }
-
-                _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
-            }
-            else
+            if (!_node.ValueChanged())
             {
                 _logger.Debug($"{_node.T()} Value was same: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
             }
-        }
-
-        private Task[] _GetParentUpdateTasks()
-        {
-            var parents = _node.Parents.ToArray();
-            var parentTasks = new Task[_node.Parents.Count()];
-
-            for (int i = 0; i < _node.Parents.Count(); i++)
+            else
             {
-                var parent = parents[i];
+                _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
 
-                if (parent is null)
-                    continue;
+                // This Node's value changed, meaning all child node values are now potentially expired.
+                // So issue a cancel to all child update tasks.
 
-                parentTasks[i] = parent.TaskManager.UpdateAsync();
+
+                //foreach (var child in _node.Children)
+                //{
+                //    //if (child.TaskManager.GetUpdateTaskStatus() == TaskStatus.Running)
+                //    //{
+                //    //    _logger.Debug($"{_node.T()} Issuing cancel to running child {child.T()}...");
+                //    //    child.TaskManager._updateTaskCTS.Cancel();
+                //    //}
+
+                //    Node c = child;
+
+                //    c.TaskManager._DisposeUpdateTask();
+                //    c.NullifyValueWithoutShiftingToPrevious();
+
+                //}
+
+                HashSet<Node> toBeVisited = new HashSet<Node>();
+
+                foreach (var child in _node.Children)
+                {
+                    toBeVisited.Add(child);
+                }
+
+                while (toBeVisited.Count > 0)
+                {
+                    Node targetDescendent = toBeVisited.First();
+                    toBeVisited.Remove(targetDescendent);
+
+                    _logger.Debug($"{_node.T()} Issuing cancel to child {targetDescendent.T()}...");
+                    targetDescendent.TaskManager._updateTaskCTS.Cancel();
+                    targetDescendent.TaskManager._DisposeUpdateTask();
+                    //target.NullifyValueWithoutShiftingToPrevious();
+
+                    foreach (var child in targetDescendent.Children)
+                    {
+                        toBeVisited.Add(child);
+                    }
+
+                    _logger.Debug($"toBeVisited.Count: {toBeVisited.Count.ToString()}");
+                }
+
+
             }
-
-            return parentTasks;
         }
+
+        //private Task[] _GetParentUpdateTasks()
+        //{
+        //    var parents = _node.Parents.ToArray();
+        //    var parentTasks = new Task[_node.Parents.Count()];
+
+        //    for (int i = 0; i < _node.Parents.Count(); i++)
+        //    {
+        //        var parent = parents[i];
+
+        //        if (parent is null)
+        //            continue;
+
+        //        parentTasks[i] = parent.TaskManager.UpdateAsync();
+        //    }
+
+        //    return parentTasks;
+        //}
 
         internal TaskStatus GetUpdateTaskStatus()
         {

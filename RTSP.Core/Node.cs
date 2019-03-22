@@ -143,23 +143,42 @@ namespace RTSP.Core
                 if (v == null)
                 {
                     _valueLedger.AddFirst(new LinkedListNode<object>(null));
-
-                    _logger.Debug($"{T()} Value set to NULL.");
-                    //Debug.WriteLine($"{T()} Value set to NULL.");
-                    return false;
+                    //_logger.Debug($"{T()} Value set to NULL.");
+                    //return false;
                 }
-
-                _valueLedger.AddFirst(v);
+                else
+                {
+                    _valueLedger.AddFirst(v);
+                }
 
                 while (_valueLedger.Count > capacity)
                     _valueLedger.RemoveLast();
 
-                //Debug.WriteLine($"{T()} Value set to {v} (ledger count {_valueLedger.Count}).");
-                _logger.Debug("{0} Value set to {1} (ledger count {2}).", T(), v, _valueLedger.Count);
+                _logger.Debug("{0} Value set to '{1}' (ledger count {2}).", T(), v, _valueLedger.Count);
 
                 return true;
             }
         }
+
+        //internal void NullifyValueWithoutShiftingToPrevious()
+        //{
+        //    lock (_valueLock)
+        //    {
+        //        //var v = GetValue();
+
+        //        //if (v != null)
+        //        //{
+        //        //    var prev = _valueLedger.ElementAt(1);
+
+                    
+
+        //        //    _valueLedger.AddFirst(new LinkedListNode<object>(null));
+        //        //    _logger.Debug($"{T()} Value NULLIFIED (prev value = {GetPreviousValue()})");
+        //        //}
+
+
+        //    }
+        //}
 
         public object GetValue()
         {
