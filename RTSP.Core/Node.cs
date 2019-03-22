@@ -9,7 +9,6 @@ namespace RTSP.Core
     public abstract class Node
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly object _valueLock = new object();
         private LinkedList<object> _valueLedger;
         internal readonly NodeTaskManager TaskManager;

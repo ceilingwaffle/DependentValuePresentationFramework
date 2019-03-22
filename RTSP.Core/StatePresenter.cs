@@ -15,7 +15,7 @@ namespace RTSP.Core
         private readonly List<Action<State>> _eventHandlers_NewState;
 
         // TODO: Load this from config
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(5000);
+        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(15000);
 
         public StatePresenter()
         {
@@ -37,16 +37,14 @@ namespace RTSP.Core
 
                 foreach (var node in presentationEnabledNodes)
                 {
+
                     if (node.TaskManager.GetUpdateTaskStatus() != TaskStatus.Running)
                     {
-                        _logger.Debug($"{node.T()} UpdateAsync() START...");
-                        node.TaskManager.UpdateAsync().ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        _logger.Debug($"{node.T()} -----------UpdateAsync() ALREADY RUNNING.");
+                        node.TaskManager.DisposeUpdateTask();
+                        node.TaskManager.ResetUpdateTaskCTS();
                     }
 
+                    node.TaskManager.UpdateAsync().ConfigureAwait(false);
                 }
 
                 await Task.Delay(_scannerInterval);

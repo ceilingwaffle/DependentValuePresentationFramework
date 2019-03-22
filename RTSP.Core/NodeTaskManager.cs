@@ -36,75 +36,133 @@ namespace RTSP.Core
             _logger.Debug($"{_node.T()} _ResetUpdateTaskCTS().");
         }
 
+        //internal async Task UpdateAsync()
+        //{
+        //    var updateTask = GetUpdateTask();
+
+        //    //if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
+        //    //{
+        //    //    _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask.Status.ToString()})");
+
+        //    //    DisposeUpdateTask();
+        //    //    ResetUpdateTaskCTS();
+        //    //}
+
+
+
+        //    //updateTask = GetUpdateTask();
+
+
+
+        //    //if (updateTask != null && updateTask.IsCompleted)
+        //    //{
+        //    //    _logger.Debug($"{_node.T()} task is already running.");
+        //    //    return;
+        //    //}
+
+        //    //if (updateTask.IsCanceled)
+        //    //{
+        //    //    _logger.Debug($"{_node.T()} task is cancelled");
+        //    //    return;
+        //    //}
+
+
+
+        //    await updateTask.ConfigureAwait(false);
+        //}
+
         internal async Task UpdateAsync()
         {
-            var updateTask = GetUpdateTask();
+            _logger.Debug($"{_node.T()} UpdateAsync() START...");
 
-            if (updateTask.IsCanceled)
+            if (GetUpdateTaskStatus() == TaskStatus.Running)
             {
-                _logger.Debug($"{_node.T()} task is cancelled");
+                _logger.Debug($"{_node.T()} -----------UpdateAsync() ALREADY RUNNING.");
                 return;
             }
 
-            await updateTask.ConfigureAwait(false);
-
             if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
             {
-                _logger.Debug($"{_node.T()} task status: {_updateTask.Status.ToString()}");
+                _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask.Status.ToString()})");
 
-                _DisposeUpdateTask();
+                DisposeUpdateTask();
                 ResetUpdateTaskCTS();
             }
-        }
 
-        private Task GetUpdateTask()
-        {
             if (_updateTask != null)
             {
                 _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
-                //Debug.WriteLineIf(_updateTask != null,
-                //    $"{_node.T()}_updateTask already running (_updateTask != null).");
             }
 
             if (_updateTask?.Status == TaskStatus.Running)
             {
                 _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
-
-                //Debug.WriteLineIf(_updateTask?.Status == TaskStatus.Running,
-                //    $"{_node.T()}_updateTask already running (_updateTask?.Status == TaskStatus.Running).");
             }
 
-            if (_updateTask == null || _updateTask.IsCanceled)
+            if (_updateTask == null)
             {
-                _updateTask = Task.Run(async () =>
-                {
-                    if (_updateTaskCTS.IsCancellationRequested)
-                    {
-                        _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.");
-                        return;
-                    }
+                _updateTask = GetUpdateTask();
 
-                    foreach (var parent in _node.Parents)
-                    {
-                        _logger.Debug($"{_node.T()} requesting update from parent: {parent.GetType().ToString()}");
-                        await parent.TaskManager.UpdateAsync();
-                    }
-
-                    //Task.WaitAll(_GetParentUpdateTasks());
-
-                    // TODO: calculate value
-                    var value = await _node.DetermineValueAsync();
-                    _node.SetValue(value);
-
-                    // TODO: Need to cancel all children of children also (not just direct children)
-                    _CancelChildTasksIfValueUpdated();
-
-                    _logger.Debug($"{_node.T()}updateTask completed.");
-
-                }, _updateTaskCTS.Token);
+                await _updateTask.ConfigureAwait(false);
             }
 
-            return _updateTask;
+        }
+
+        private Task GetUpdateTask()
+        {
+            return Task.Run(async () =>
+            {
+                if (_updateTaskCTS.IsCancellationRequested)
+                {
+                    _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.");
+                    return;
+                }
+
+                foreach (var parent in _node.Parents)
+                {
+                    _logger.Debug($"{_node.T()} requesting update from parent: {parent.GetType().ToString()}");
+                    await parent.TaskManager.UpdateAsync();
+                }
+
+                //Task.WaitAll(_GetParentUpdateTasks());
+
+                // TODO: calculate value
+                var value = await _node.DetermineValueAsync();
+                _node.SetValue(value);
+
+                // TODO: Need to cancel all children of children also (not just direct children)
+                _CancelChildTasksIfValueUpdated();
+
+                _logger.Debug($"{_node.T()}updateTask completed.");
+
+            }, _updateTaskCTS.Token);
+
+            //return Task.Run(async () =>
+            //{
+            //    if (_updateTaskCTS.IsCancellationRequested)
+            //    {
+            //        _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.");
+            //        return;
+            //    }
+
+            //    foreach (var parent in _node.Parents)
+            //    {
+            //        _logger.Debug($"{_node.T()} requesting update from parent: {parent.GetType().ToString()}");
+            //        await parent.TaskManager.UpdateAsync();
+            //    }
+
+            //    //Task.WaitAll(_GetParentUpdateTasks());
+
+            //    // TODO: calculate value
+            //    var value = await _node.DetermineValueAsync();
+            //    _node.SetValue(value);
+
+            //    // TODO: Need to cancel all children of children also (not just direct children)
+            //    _CancelChildTasksIfValueUpdated();
+
+            //    _logger.Debug($"{_node.T()}updateTask completed.");
+
+            //}, _updateTaskCTS.Token);
         }
 
         private void _CancelChildTasksIfValueUpdated()
@@ -131,7 +189,7 @@ namespace RTSP.Core
 
                 //    Node c = child;
 
-                //    c.TaskManager._DisposeUpdateTask();
+                //    c.TaskManager.DisposeUpdateTask();
                 //    c.NullifyValueWithoutShiftingToPrevious();
 
                 //}
@@ -149,8 +207,10 @@ namespace RTSP.Core
                     toBeVisited.Remove(targetDescendent);
 
                     _logger.Debug($"{_node.T()} Issuing cancel to child {targetDescendent.T()}...");
-                    targetDescendent.TaskManager._updateTaskCTS.Cancel();
-                    targetDescendent.TaskManager._DisposeUpdateTask();
+                    targetDescendent.TaskManager.DisposeUpdateTask();
+                    targetDescendent.TaskManager.ResetUpdateTaskCTS();
+                    //targetDescendent.TaskManager.UpdateAsync().ConfigureAwait(false);
+
                     //target.NullifyValueWithoutShiftingToPrevious();
 
                     foreach (var child in targetDescendent.Children)
@@ -194,12 +254,12 @@ namespace RTSP.Core
             return _updateTask.Status;
         }
 
-        private void _DisposeUpdateTask()
+        internal void DisposeUpdateTask()
         {
             if (_updateTask != null)
             {
                 _updateTask = null;
-                _logger.Debug($"{_node.T()} _DisposeUpdateTask().");
+                _logger.Debug($"{_node.T()} DisposeUpdateTask().");
             }
         }
 
