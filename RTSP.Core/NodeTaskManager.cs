@@ -75,10 +75,20 @@ namespace RTSP.Core
         {
             _logger.Debug($"{_node.T()} UpdateAsync() START...");
 
-            if (GetUpdateTaskStatus() == TaskStatus.Running)
+            //if (_updateTask != null)
+            //{
+            //    _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
+            //}
+
+            //if (GetUpdateTaskStatus() == TaskStatus.Running)
+            //{
+            //    _logger.Debug($"{_node.T()} -----------UpdateAsync() ALREADY RUNNING.");
+            //    return;
+            //}
+
+            if (_updateTask?.Status == TaskStatus.Running)
             {
-                _logger.Debug($"{_node.T()} -----------UpdateAsync() ALREADY RUNNING.");
-                return;
+                _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
             }
 
             if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
@@ -89,23 +99,12 @@ namespace RTSP.Core
                 ResetUpdateTaskCTS();
             }
 
-            if (_updateTask != null)
-            {
-                _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
-            }
-
-            if (_updateTask?.Status == TaskStatus.Running)
-            {
-                _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
-            }
-
             if (_updateTask == null)
             {
                 _updateTask = GetUpdateTask();
-
-                await _updateTask.ConfigureAwait(false);
             }
 
+            await _updateTask.ConfigureAwait(false);
         }
 
         private Task GetUpdateTask()
