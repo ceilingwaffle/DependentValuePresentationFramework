@@ -43,9 +43,9 @@
             _nodeCollection.Add(milkyWay);
             Assert.AreEqual(_nodeCollection.Count(), 2);
 
-            // adding child should not increase collection count
+            // adding a follower should not increase collection count
             var solarSystem = new SolarSystem();
-            milkyWay.AddChildren(solarSystem);
+            milkyWay.Precedes(solarSystem);
             Assert.AreEqual(_nodeCollection.Count(), 2);
         }
 

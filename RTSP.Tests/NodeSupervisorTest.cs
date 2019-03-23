@@ -45,11 +45,11 @@ namespace RTSP.Tests
         //    var Oumuamua = new Oumuamua();
         //    var HalleysComet = new HalleysComet();
 
-        //    MilkyWay.AddChildren(SolarSystem);
-        //    Andromeda.AddChildren(Oumuamua);
-        //    SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
-        //    Sun.AddChildren(HalleysComet);
-        //    Earth.AddChildren(HalleysComet);
+        //    MilkyWay.Precedes(SolarSystem);
+        //    Andromeda.Precedes(Oumuamua);
+        //    SolarSystem.Precedes(Sun, Earth, Jupiter, Oumuamua);
+        //    Sun.Precedes(HalleysComet);
+        //    Earth.Precedes(HalleysComet);
 
         //    NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
         //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
@@ -82,11 +82,11 @@ namespace RTSP.Tests
         //    var Oumuamua = new Oumuamua();
         //    var HalleysComet = new HalleysComet();
 
-        //    MilkyWay.AddChildren(SolarSystem);
-        //    Andromeda.AddChildren(Oumuamua);
-        //    SolarSystem.AddChildren(Sun, Earth, Jupiter, Oumuamua);
-        //    Sun.AddChildren(HalleysComet);
-        //    Earth.AddChildren(HalleysComet);
+        //    MilkyWay.Precedes(SolarSystem);
+        //    Andromeda.Precedes(Oumuamua);
+        //    SolarSystem.Precedes(Sun, Earth, Jupiter, Oumuamua);
+        //    Sun.Precedes(HalleysComet);
+        //    Earth.Precedes(HalleysComet);
 
         //    //_nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
         //    NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
@@ -123,7 +123,7 @@ namespace RTSP.Tests
         //{
         //    int iterations = 10000;
 
-        //    // assert minimum 3 iterations because we need parent, child, grandchild minimum
+        //    // assert minimum 3 iterations because we need preceder, follower, "follower of follower" minimum
         //    Assert.GreaterOrEqual(iterations, 3);
 
         //    try
@@ -137,16 +137,16 @@ namespace RTSP.Tests
 
         //            if (i > 0)
         //            {
-        //                var parent = dynamicNodes[i - 1];
+        //                var preceder = dynamicNodes[i - 1];
 
-        //                parent?.AddChildren(n);
+        //                preceder?.Precedes(n);
         //            }
         //        }
 
         //        // assert expected number of dynamic nodes created
         //        Assert.AreEqual(dynamicNodes.Count, iterations);
 
-        //        // assert parent, child, grandchild are not null
+        //        // assert preceder, follower, "follower of follower" are not null
         //        Node p = dynamicNodes[0];
         //        Node c = dynamicNodes[1];
         //        Node gc = dynamicNodes[2];
@@ -154,15 +154,15 @@ namespace RTSP.Tests
         //        Assert.IsNotNull(c);
         //        Assert.IsNotNull(gc);
 
-        //        // assert that the first node is the second node's parent
-        //        Node expectedParent = null;
-        //        c?.Parents?.TryGetValue(p.GetType(), out expectedParent);
-        //        Assert.IsNotNull(expectedParent);
-        //        Assert.AreEqual(p, expectedParent);
+        //        // assert that the first node is the second node's preceder
+        //        Node expectedPreceder = null;
+        //        c?.Preceders?.TryGetValue(p.GetType(), out expectedPreceder);
+        //        Assert.IsNotNull(expectedPreceder);
+        //        Assert.AreEqual(p, expectedPreceder);
 
-        //        // assert that the grandparent of grandchild is not the parent of grandchild
+        //        // assert that the preceder of the follower is not the preceder of "follower of follower" (grandchild)
         //        Node expectedParentOfGC = null;
-        //        gc?.Parents?.TryGetValue(c.GetType(), out expectedParentOfGC);
+        //        gc?.Preceders?.TryGetValue(c.GetType(), out expectedParentOfGC);
         //        Assert.IsNotNull(expectedParentOfGC);
         //        Assert.AreNotEqual(p, expectedParentOfGC);
 

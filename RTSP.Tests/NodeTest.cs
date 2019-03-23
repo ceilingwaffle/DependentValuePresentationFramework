@@ -25,54 +25,54 @@
         }
 
         /// <summary>
-        /// Tests parent has child
+        /// Tests preceder has follower
         /// </summary>
         [Test]
-        public void TestChildOfParent()
+        public void TestFollowerOfPreceder()
         {
             // setup
             var milkyWay = new MilkyWay();
             var solarSystem = new SolarSystem();
-            milkyWay.AddChildren(solarSystem);
-            var milkyWayChildren = milkyWay.Children;
-            var milkyWayHasChild = milkyWayChildren.TryGetValue(typeof(SolarSystem), out var milkyWayChild);
+            milkyWay.Precedes(solarSystem);
+            var milkyWayFollowers = milkyWay.Followers;
+            var milkyWayHasFollower = milkyWayFollowers.TryGetValue(typeof(SolarSystem), out var milkyWayFollower);
 
             // assertions
-            Assert.IsTrue(milkyWayHasChild);
-            Assert.IsNotNull(milkyWayChildren);
-            Assert.AreSame(milkyWayChild, solarSystem);
+            Assert.IsTrue(milkyWayHasFollower);
+            Assert.IsNotNull(milkyWayFollowers);
+            Assert.AreSame(milkyWayFollower, solarSystem);
         }
 
         /// <summary>
-        /// Tests child has parent
+        /// Tests follower has preceder
         /// </summary>
         [Test]
-        public void TestParentOfChild()
+        public void TestPrecederOfFollower()
         {
             // setup
             var milkyWay = new MilkyWay();
             var solarSystem = new SolarSystem();
-            milkyWay.AddChildren(solarSystem);
-            var solarSystemParents = solarSystem.Parents;
-            var solarSystemHasParent = solarSystemParents.TryGetValue(typeof(MilkyWay), out var solarSystemParent);
+            milkyWay.Precedes(solarSystem);
+            var solarSystemPreceders = solarSystem.Preceders;
+            var solarSystemHasPreceder = solarSystemPreceders.TryGetValue(typeof(MilkyWay), out var solarSystemPreceder);
             
             // assertions
-            Assert.IsNotNull(solarSystemParents);
-            Assert.IsTrue(solarSystemHasParent);
-            Assert.AreSame(solarSystemParent, milkyWay);
+            Assert.IsNotNull(solarSystemPreceders);
+            Assert.IsTrue(solarSystemHasPreceder);
+            Assert.AreSame(solarSystemPreceder, milkyWay);
         }
 
         [Test]
-        public void TestHasChildrenMethod()
+        public void TestHasFollowersMethod()
         {
             var milkyWay = new MilkyWay();
 
-            Assert.IsFalse(milkyWay.HasChildren());
+            Assert.IsFalse(milkyWay.HasFollowers());
 
-            var childNode = new SolarSystem();
-            milkyWay.AddChildren(childNode);
+            var followerNode = new SolarSystem();
+            milkyWay.Precedes(followerNode);
 
-            Assert.IsTrue(milkyWay.HasChildren());
+            Assert.IsTrue(milkyWay.HasFollowers());
         }
 
         [Test]

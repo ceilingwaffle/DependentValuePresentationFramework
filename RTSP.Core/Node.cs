@@ -26,9 +26,9 @@ namespace RTSP.Core
 
         private static HashSet<string> NodeStatePropertyNames { get; set; } = new HashSet<string>();
 
-        public NodeCollection Children { get; } = new NodeCollection();
+        public NodeCollection Followers { get; } = new NodeCollection();
 
-        public NodeCollection Parents { get; } = new NodeCollection();
+        public NodeCollection Preceders { get; } = new NodeCollection();
 
         internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
 
@@ -106,26 +106,38 @@ namespace RTSP.Core
                 _valueLedger.AddFirst(new LinkedListNode<object>(null));
         }
 
-        public void AddChildren(params Node[] nodes)
+        public void Precedes(params Node[] nodes)
         {
             foreach (var node in nodes)
             {
                 if (node == null)
                     throw new ArgumentNullException(node.GetType().ToString());
 
-                Children.Add(node);
-                node.Parents.Add(this);
+                Followers.Add(node);
+                node.Preceders.Add(this);
             }
         }
 
-        public bool HasChildren()
+        public void Follows(params Node[] nodes)
         {
-            return Children.Count() > 0;
+            foreach (var node in nodes)
+            {
+                if (node == null)
+                    throw new ArgumentNullException(node.GetType().ToString());
+
+                Preceders.Add(node);
+                node.Followers.Add(this);
+            }
         }
 
-        public bool HasParents()
+        public bool HasFollowers()
         {
-            return Parents.Count() > 0;
+            return Followers.Count() > 0;
+        }
+
+        public bool HasPreceders()
+        {
+            return Preceders.Count() > 0;
         }
 
         /// <summary>

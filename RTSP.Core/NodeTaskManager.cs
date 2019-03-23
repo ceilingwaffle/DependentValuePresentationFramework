@@ -117,20 +117,20 @@ namespace RTSP.Core
                     return;
                 }
 
-                foreach (var parent in _node.Parents)
+                foreach (var preceder in _node.Preceders)
                 {
-                    _logger.Debug($"{_node.T()} requesting update from parent: {parent.GetType().ToString()}");
-                    await parent.TaskManager.UpdateAsync();
+                    _logger.Debug($"{_node.T()} requesting update from preceder: {preceder.GetType().ToString()}");
+                    await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
                 }
 
-                //Task.WaitAll(_GetParentUpdateTasks());
+                //Task.WaitAll(_GetPrecederUpdateTasks());
 
                 // TODO: calculate value
                 var value = await _node.DetermineValueAsync();
                 _node.SetValue(value);
 
-                // TODO: Need to cancel all children of children also (not just direct children)
-                _CancelChildTasksIfValueUpdated();
+                // TODO: Need to cancel all followers of followers also (not just direct followers)
+                _CancelFollowerTasksIfValueUpdated();
 
                 _logger.Debug($"{_node.T()}updateTask completed.");
 
@@ -144,27 +144,27 @@ namespace RTSP.Core
             //        return;
             //    }
 
-            //    foreach (var parent in _node.Parents)
+            //    foreach (var preceder in _node.Preceders)
             //    {
-            //        _logger.Debug($"{_node.T()} requesting update from parent: {parent.GetType().ToString()}");
-            //        await parent.TaskManager.UpdateAsync();
+            //        _logger.Debug($"{_node.T()} requesting update from preceder: {preceder.GetType().ToString()}");
+            //        await preceder.TaskManager.UpdateAsync();
             //    }
 
-            //    //Task.WaitAll(_GetParentUpdateTasks());
+            //    //Task.WaitAll(_GetPrecederUpdateTasks());
 
             //    // TODO: calculate value
             //    var value = await _node.DetermineValueAsync();
             //    _node.SetValue(value);
 
             //    // TODO: Need to cancel all children of children also (not just direct children)
-            //    _CancelChildTasksIfValueUpdated();
+            //    _CancelFollowerTasksIfValueUpdated();
 
             //    _logger.Debug($"{_node.T()}updateTask completed.");
 
             //}, _updateTaskCTS.Token);
         }
 
-        private void _CancelChildTasksIfValueUpdated()
+        private void _CancelFollowerTasksIfValueUpdated()
         {
             if (!_node.ValueChanged())
             {
@@ -174,30 +174,30 @@ namespace RTSP.Core
             {
                 _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
 
-                // This Node's value changed, meaning all child node values are now potentially expired.
-                // So issue a cancel to all child update tasks.
+                // This Node's value changed, meaning all follower node values are now potentially expired.
+                // So issue a cancel to all follower update tasks.
 
 
-                //foreach (var child in _node.Children)
+                //foreach (var follower in _node.Followers)
                 //{
-                //    //if (child.TaskManager.GetUpdateTaskStatus() == TaskStatus.Running)
+                //    //if (follower.TaskManager.GetUpdateTaskStatus() == TaskStatus.Running)
                 //    //{
-                //    //    _logger.Debug($"{_node.T()} Issuing cancel to running child {child.T()}...");
-                //    //    child.TaskManager._updateTaskCTS.Cancel();
+                //    //    _logger.Debug($"{_node.T()} Issuing cancel to running follower {follower.T()}...");
+                //    //    follower.TaskManager._updateTaskCTS.Cancel();
                 //    //}
 
-                //    Node c = child;
+                //    Node f = follower;
 
-                //    c.TaskManager.DisposeUpdateTask();
-                //    c.NullifyValueWithoutShiftingToPrevious();
+                //    f.TaskManager.DisposeUpdateTask();
+                //    f.NullifyValueWithoutShiftingToPrevious();
 
                 //}
 
                 HashSet<Node> toBeVisited = new HashSet<Node>();
 
-                foreach (var child in _node.Children)
+                foreach (var follower in _node.Followers)
                 {
-                    toBeVisited.Add(child);
+                    toBeVisited.Add(follower);
                 }
 
                 while (toBeVisited.Count > 0)
@@ -205,16 +205,16 @@ namespace RTSP.Core
                     Node targetDescendent = toBeVisited.First();
                     toBeVisited.Remove(targetDescendent);
 
-                    _logger.Debug($"{_node.T()} Issuing cancel to child {targetDescendent.T()}...");
+                    _logger.Debug($"{_node.T()} Issuing cancel to follower {targetDescendent.T()}...");
                     targetDescendent.TaskManager.DisposeUpdateTask();
                     targetDescendent.TaskManager.ResetUpdateTaskCTS();
                     //targetDescendent.TaskManager.UpdateAsync().ConfigureAwait(false);
 
                     //target.NullifyValueWithoutShiftingToPrevious();
 
-                    foreach (var child in targetDescendent.Children)
+                    foreach (var follower in targetDescendent.Followers)
                     {
-                        toBeVisited.Add(child);
+                        toBeVisited.Add(follower);
                     }
 
                     _logger.Debug($"toBeVisited.Count: {toBeVisited.Count.ToString()}");
@@ -224,22 +224,22 @@ namespace RTSP.Core
             }
         }
 
-        //private Task[] _GetParentUpdateTasks()
+        //private Task[] _GetPrecederUpdateTasks()
         //{
-        //    var parents = _node.Parents.ToArray();
-        //    var parentTasks = new Task[_node.Parents.Count()];
+        //    var preceders = _node.Preceders.ToArray();
+        //    var precederTasks = new Task[_node.Preceders.Count()];
 
-        //    for (int i = 0; i < _node.Parents.Count(); i++)
+        //    for (int i = 0; i < _node.Preceders.Count(); i++)
         //    {
-        //        var parent = parents[i];
+        //        var preceder = preceders[i];
 
-        //        if (parent is null)
+        //        if (preceder is null)
         //            continue;
 
-        //        parentTasks[i] = parent.TaskManager.UpdateAsync();
+        //        precederTasks[i] = preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
         //    }
 
-        //    return parentTasks;
+        //    return precederTasks;
         //}
 
         internal TaskStatus GetUpdateTaskStatus()

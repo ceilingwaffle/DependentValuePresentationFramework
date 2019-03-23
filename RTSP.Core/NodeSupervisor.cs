@@ -49,7 +49,7 @@ namespace RTSP.Core
 
         //    foreach (var node in initializedNodesCollection)
         //    {
-        //        if (!node.HasParents())
+        //        if (!node.HasPreceders())
         //        {
         //            roots.Add(node);
         //        }
@@ -73,17 +73,17 @@ namespace RTSP.Core
         //    {
         //        var node = unvisited.Pop();
 
-        //        if (!node.HasChildren())
+        //        if (!node.HasFollowers())
         //        {
         //            leaves.Add(node);
         //        }
         //        else
         //        {
-        //            foreach (var child in node.Children)
+        //            foreach (var follower in node.Followers)
         //            {
-        //                if (!unvisited.Contains(child))
+        //                if (!unvisited.Contains(follower))
         //                {
-        //                    unvisited.Push(child);
+        //                    unvisited.Push(follower);
         //                }
         //            }
         //        }
