@@ -18,9 +18,13 @@ namespace RTSP.Core
 
         private Task _updateTask;
         private CancellationTokenSource _updateTaskCTS;
+
+        /// <summary>
+        /// key = Node Type, value = CTS
+        /// </summary>
+        private readonly Dictionary<Type, CancellationTokenSource> _followerTaskCTSList = new Dictionary<Type, CancellationTokenSource>();
         // TODO: Load this from config
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
-
 
         public NodeTaskManager(Node node)
         {
@@ -29,11 +33,21 @@ namespace RTSP.Core
 
         internal void ResetUpdateTaskCTS()
         {
-            if (_updateTaskCTS != null)
-                _updateTaskCTS.Dispose();
-
+            //if (_updateTaskCTS != null)
+            //    _updateTaskCTS.Dispose();
             _updateTaskCTS = new CancellationTokenSource();
+
+            foreach (var preceder in _node.Preceders)
+            {
+                preceder.TaskManager.AddFollowerCTS(this.GetType(), _updateTaskCTS);
+            }
+
             _logger.Debug($"{_node.T()} _ResetUpdateTaskCTS().");
+        }
+
+        private void AddFollowerCTS(Type followerNodeType, CancellationTokenSource updateTaskCTS)
+        {
+            _followerTaskCTSList[followerNodeType] = updateTaskCTS;
         }
 
         //internal async Task UpdateAsync()
@@ -73,6 +87,10 @@ namespace RTSP.Core
 
         internal async Task UpdateAsync()
         {
+            // TODO: Figure out when to check the CTS to not continue with the task. 
+
+
+
             _logger.Debug($"{_node.T()} UpdateAsync() START...");
 
             //if (_updateTask != null)
@@ -127,6 +145,14 @@ namespace RTSP.Core
 
                 // TODO: calculate value
                 var value = await _node.DetermineValueAsync();
+
+                if (_updateTaskCTS.IsCancellationRequested)
+                {
+                    _logger.Debug($"{_node.T()} Cancellation was requested. Resetting value to null.");
+                    _node.NullifyValueWithoutShiftingToPrevious();
+                    return;
+                }
+
                 _node.SetValue(value);
 
                 // TODO: Need to cancel all followers of followers also (not just direct followers)

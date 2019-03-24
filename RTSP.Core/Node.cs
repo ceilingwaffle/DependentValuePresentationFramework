@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RTSP.Core
@@ -177,25 +178,21 @@ namespace RTSP.Core
             }
         }
 
-        //internal void NullifyValueWithoutShiftingToPrevious()
-        //{
-        //    lock (_valueLock)
-        //    {
-        //        //var v = GetValue();
+        internal void NullifyValueWithoutShiftingToPrevious()
+        {
+            lock (_valueLock)
+            {
+                var v = GetValue();
 
-        //        //if (v != null)
-        //        //{
-        //        //    var prev = _valueLedger.ElementAt(1);
+                if (v is null)
+                    return;
 
-                    
+                _valueLedger.RemoveFirst();
+                _valueLedger.AddFirst(new LinkedListNode<object>(null));
 
-        //        //    _valueLedger.AddFirst(new LinkedListNode<object>(null));
-        //        //    _logger.Debug($"{T()} Value NULLIFIED (prev value = {GetPreviousValue()})");
-        //        //}
-
-
-        //    }
-        //}
+                _logger.Debug($"{T()} Value NULLIFIED (prev value = {GetPreviousValue()})");
+            }
+        }
 
         public object GetValue()
         {
