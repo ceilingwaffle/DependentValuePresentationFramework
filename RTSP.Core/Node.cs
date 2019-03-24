@@ -110,7 +110,7 @@ namespace RTSP.Core
         {
             foreach (var node in nodes)
             {
-                if (node == null)
+                if (node is null)
                     throw new ArgumentNullException("Node was null.");
 
                 if (node.GetType() == this.GetType())
@@ -125,7 +125,7 @@ namespace RTSP.Core
         {
             foreach (var node in nodes)
             {
-                if (node == null)
+                if (node is null)
                     throw new ArgumentNullException("Node was null.");
 
                 if (node.GetType() == this.GetType())
@@ -157,7 +157,7 @@ namespace RTSP.Core
             {
                 var capacity = 2;
 
-                if (v == null)
+                if (v is null)
                 {
                     _valueLedger.AddFirst(new LinkedListNode<object>(null));
                     //_logger.Debug($"{T()} Value set to NULL.");
@@ -236,10 +236,10 @@ namespace RTSP.Core
             var current = GetPreviousValue(age: 0);
             var previous = GetPreviousValue(age: 1);
 
-            if (current == null)
+            if (current is null)
                 return false;
 
-            if (current == null && previous == null)
+            if (current is null && previous is null)
                 return false;
 
             return !current.Equals(previous);

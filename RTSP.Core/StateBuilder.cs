@@ -32,7 +32,7 @@ namespace RTSP.Core
                 // only include this node's property name on the state if the name is defined
                 StatePropertyAttribute statePropertyAttribute = node.GetStatePropertyAttribute();
 
-                if (statePropertyAttribute?.Name == null)
+                if (statePropertyAttribute?.Name is null)
                 {
                     continue;
                 }

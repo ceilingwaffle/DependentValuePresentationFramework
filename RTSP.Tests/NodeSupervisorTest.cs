@@ -31,6 +31,19 @@ namespace RTSP.Tests
 
         }
 
+        [Test]
+        public void TestEnabledNodes()
+        {
+            var shouldBeEnabled = new ValidEnabledStatePropertyNode();
+            var shouldNotBeEnabled = new DisabledStatePropertyNode();
+
+            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
+            NodeCollection enabledNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectEnabledNodes", initializedNodes);
+
+            CollectionAssert.Contains(enabledNodes, shouldBeEnabled);
+            CollectionAssert.DoesNotContain(enabledNodes, shouldNotBeEnabled);
+        }
+
         //[Test]
         //public void TestRootNodesAreRoots()
         //{
@@ -104,19 +117,6 @@ namespace RTSP.Tests
         //    // we don't care about the order the nodes are listed in, only that the nodes exist in both lists.
         //    CollectionAssert.AreEquivalent(returnedLeaves.ToList(), expectedLeaves.ToList());
         //}
-
-        [Test]
-        public void TestEnabledNodes()
-        {
-            var shouldBeEnabled = new ValidEnabledStatePropertyNode();
-            var shouldNotBeEnabled = new DisabledStatePropertyNode();
-
-            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-            NodeCollection enabledNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectEnabledNodes", initializedNodes);
-
-            CollectionAssert.Contains(enabledNodes, shouldBeEnabled);
-            CollectionAssert.DoesNotContain(enabledNodes, shouldNotBeEnabled);
-        }
 
         //[Test]
         //public void TestCollectLeafNodesMethodDoesNotThrowStackOverflowException()

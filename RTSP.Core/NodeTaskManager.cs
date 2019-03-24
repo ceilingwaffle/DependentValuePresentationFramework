@@ -99,7 +99,7 @@ namespace RTSP.Core
                 ResetUpdateTaskCTS();
             }
 
-            if (_updateTask == null)
+            if (_updateTask is null)
             {
                 _updateTask = GetUpdateTask();
             }
@@ -147,7 +147,7 @@ namespace RTSP.Core
             //    foreach (var preceder in _node.Preceders)
             //    {
             //        _logger.Debug($"{_node.T()} requesting update from preceder: {preceder.GetType().ToString()}");
-            //        await preceder.TaskManager.UpdateAsync();
+            //        await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
             //    }
 
             //    //Task.WaitAll(_GetPrecederUpdateTasks());
@@ -244,7 +244,7 @@ namespace RTSP.Core
 
         internal TaskStatus GetUpdateTaskStatus()
         {
-            if (_updateTask == null)
+            if (_updateTask is null)
             {
                 // TODO: Something else like a custom UpdateTaskStatus class which extends TaskStatus but has a custom null status.
                 return TaskStatus.WaitingToRun;
