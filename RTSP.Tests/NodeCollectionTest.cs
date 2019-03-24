@@ -1,4 +1,6 @@
-﻿namespace RTSP.Tests
+﻿using System;
+
+namespace RTSP.Tests
 {
     using NUnit.Framework;
     using RTSP.Core;
@@ -50,14 +52,46 @@
         }
 
         [Test]
-        public void TestNodeOfSameTypeNotAddedTwice()
+        public void TestExceptionThrownWhenSameNodeAddedTwice()
         {
             var milkyWay = new MilkyWay();
             Assert.AreEqual(_nodeCollection.Count(), 0);
+
             _nodeCollection.Add(milkyWay);
             Assert.AreEqual(_nodeCollection.Count(), 1);
-            _nodeCollection.Add(milkyWay);
+
+            try
+            {
+                _nodeCollection.Add(milkyWay);
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Expected ArgumentException (attempted to add same node twice).");
+        }
+
+        [Test]
+        public void TestExceptionThrownWhenNodeOfSameTypeAddedTwice()
+        {
+            var milkyWay1 = new MilkyWay();
+            Assert.AreEqual(_nodeCollection.Count(), 0);
+
+            _nodeCollection.Add(milkyWay1);
             Assert.AreEqual(_nodeCollection.Count(), 1);
+
+            try
+            {
+                var milkyWay2 = new MilkyWay();
+                _nodeCollection.Add(milkyWay2);
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Expected ArgumentException (attempted to add node of same type twice).");
         }
 
         [Test]

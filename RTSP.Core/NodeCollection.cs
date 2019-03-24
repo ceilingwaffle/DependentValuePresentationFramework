@@ -22,7 +22,8 @@ namespace RTSP.Core
             if (node is null)
                 throw new ArgumentNullException();
 
-            _nodes[node.GetType()] = node;
+            //_nodes[node.GetType()] = node;
+            _nodes.Add(node.GetType(), node);
         }
 
         public List<KeyValuePair<Type, Node>> ToList()

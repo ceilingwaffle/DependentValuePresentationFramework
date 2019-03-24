@@ -69,14 +69,27 @@
 
             Assert.IsFalse(milkyWay.HasFollowers());
 
-            var followerNode = new SolarSystem();
-            milkyWay.Precedes(followerNode);
+            var solarSystem = new SolarSystem();
+            milkyWay.Precedes(solarSystem);
 
             Assert.IsTrue(milkyWay.HasFollowers());
         }
 
         [Test]
-        public void TestExceptionThrownWhenInitializingTwoOfSameNodeType()
+        public void TestHasPrecedersMethod()
+        {
+            var solarSystem = new SolarSystem();
+
+            Assert.IsFalse(solarSystem.HasPreceders());
+
+            var milkyWay = new MilkyWay();
+            solarSystem.Follows(milkyWay);
+
+            Assert.IsTrue(solarSystem.HasPreceders());
+        }
+
+        [Test]
+        public void TestExceptionThrown_InitializingTwoNodesOfSameType()
         {
             var milkyWay1 = new MilkyWay();
 
@@ -90,6 +103,84 @@
             }
 
             Assert.Fail("Expected ArgumentException (initializing the same node types should not be allowed.");
+        }
+
+        [Test]
+        public void TestExceptionThrown_CallingRedundantPrecedeAfterFollow()
+        {
+            var milkyWay = new MilkyWay();
+            var solarSystem = new SolarSystem();
+
+            solarSystem.Follows(milkyWay);
+
+            try
+            {
+                milkyWay.Precedes(solarSystem);
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Expected ArgumentException (attempted to assign node relationship twice " +
+                        "-- redundant call to b.Precedes(a) when already called a.Follows(b).");
+
+        }
+
+        [Test]
+        public void TestExceptionThrown_CallingRedundantFollowAfterPrecede()
+        {
+            var milkyWay = new MilkyWay();
+            var solarSystem = new SolarSystem();
+
+            milkyWay.Precedes(solarSystem);
+
+            try
+            {
+                solarSystem.Follows(milkyWay);
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Expected ArgumentException (attempted to assign node relationship twice " +
+                        "-- redundant call to a.Follows(b) when already called b.Precedes(a)).");
+
+        }
+
+        [Test]
+        public void TestExceptionThrown_NodeFollowsItself()
+        {
+            var solarSystem = new SolarSystem();
+
+            try
+            {
+                solarSystem.Follows(solarSystem);
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Excepted ArgumentException (node cannot follow itself).");
+        }
+
+        [Test]
+        public void TestExceptionThrown_NodePrecedesItself()
+        {
+            var solarSystem = new SolarSystem();
+
+            try
+            {
+                solarSystem.Precedes(solarSystem);
+            }
+            catch (ArgumentException)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Excepted ArgumentException (node cannot precede itself).");
         }
 
     }

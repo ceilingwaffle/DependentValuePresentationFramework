@@ -111,7 +111,10 @@ namespace RTSP.Core
             foreach (var node in nodes)
             {
                 if (node == null)
-                    throw new ArgumentNullException(node.GetType().ToString());
+                    throw new ArgumentNullException("Node was null.");
+
+                if (node.GetType() == this.GetType())
+                    throw new ArgumentNullException($"A Node cannot precede a Node of the same Type ({node.GetType().ToString()})");
 
                 Followers.Add(node);
                 node.Preceders.Add(this);
@@ -123,7 +126,10 @@ namespace RTSP.Core
             foreach (var node in nodes)
             {
                 if (node == null)
-                    throw new ArgumentNullException(node.GetType().ToString());
+                    throw new ArgumentNullException("Node was null.");
+
+                if (node.GetType() == this.GetType())
+                    throw new ArgumentNullException($"A Node cannot follow a Node of the same Type ({node.GetType().ToString()})");
 
                 Preceders.Add(node);
                 node.Followers.Add(this);
