@@ -257,6 +257,7 @@ namespace RTSP.Core
         {
             if (_updateTask != null)
             {
+                //_updateTask.Dispose();
                 _updateTask = null;
                 _logger.Debug($"{_node.T()} DisposeUpdateTask().");
             }
