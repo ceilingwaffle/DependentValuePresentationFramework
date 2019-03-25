@@ -37,12 +37,11 @@ namespace RTSP.Core
 
                 foreach (var node in presentationEnabledNodes)
                 {
-
-                    if (node.TaskManager.GetUpdateTaskStatus() != TaskStatus.Running)
-                    {
-                        node.TaskManager.DisposeUpdateTask();
-                        node.TaskManager.ResetUpdateTaskCTS();
-                    }
+                    //if (node.TaskManager.GetUpdateTaskStatus() != TaskStatus.Running)
+                    //{
+                    //    node.TaskManager.DisposeUpdateTask();
+                    //    node.TaskManager.ResetUpdateTaskCTS();
+                    //}
 
                     node.TaskManager.UpdateAsync().ConfigureAwait(false);
                 }

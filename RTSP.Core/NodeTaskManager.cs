@@ -45,6 +45,16 @@ namespace RTSP.Core
             _logger.Debug($"{_node.T()} _ResetUpdateTaskCTS().");
         }
 
+        internal void DisposeUpdateTask()
+        {
+            if (_updateTask != null)
+            {
+                //_updateTask.Dispose();
+                _updateTask = null;
+                _logger.Debug($"{_node.T()} DisposeUpdateTask().");
+            }
+        }
+
         private void AddFollowerCTS(Type followerNodeType, CancellationTokenSource updateTaskCTS)
         {
             _followerTaskCTSList[followerNodeType] = updateTaskCTS;
@@ -129,33 +139,28 @@ namespace RTSP.Core
         {
             return Task.Run(async () =>
             {
-                if (_updateTaskCTS.IsCancellationRequested)
-                {
-                    _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.");
+                // TODO: _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
+                _updateTaskCTS.CancelAfter(_updateTimeLimit);
+
+                if (_HandleUpdateTaskCancellation())
                     return;
-                }
 
                 foreach (var preceder in _node.Preceders)
                 {
                     _logger.Debug($"{_node.T()} requesting update from preceder: {preceder.GetType().ToString()}");
                     await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
                 }
-
                 //Task.WaitAll(_GetPrecederUpdateTasks());
+                if (_HandleUpdateTaskCancellation())
+                    return;
 
                 // TODO: calculate value
                 var value = await _node.DetermineValueAsync();
-
-                if (_updateTaskCTS.IsCancellationRequested)
-                {
-                    _logger.Debug($"{_node.T()} Cancellation was requested. Resetting value to null.");
-                    _node.NullifyValueWithoutShiftingToPrevious();
+                if (_HandleUpdateTaskCancellation())
                     return;
-                }
 
                 _node.SetValue(value);
 
-                // TODO: Need to cancel all followers of followers also (not just direct followers)
                 _CancelFollowerTasksIfValueUpdated();
 
                 _logger.Debug($"{_node.T()}updateTask completed.");
@@ -188,6 +193,16 @@ namespace RTSP.Core
             //    _logger.Debug($"{_node.T()}updateTask completed.");
 
             //}, _updateTaskCTS.Token);
+        }
+
+        private bool _HandleUpdateTaskCancellation()
+        {
+            if (!_updateTaskCTS.IsCancellationRequested)
+                return false;
+
+            _logger.Debug($"{_node.T()} Cancellation was requested. Resetting value to null. (a)");
+            _node.NullifyValueWithoutShiftingToPrevious();
+            return true;
         }
 
         private void _CancelFollowerTasksIfValueUpdated()
@@ -232,9 +247,11 @@ namespace RTSP.Core
                     toBeVisited.Remove(targetDescendent);
 
                     _logger.Debug($"{_node.T()} Issuing cancel to follower {targetDescendent.T()}...");
-                    targetDescendent.TaskManager.DisposeUpdateTask();
-                    targetDescendent.TaskManager.ResetUpdateTaskCTS();
-                    //targetDescendent.TaskManager.UpdateAsync().ConfigureAwait(false);
+                    //targetDescendent.TaskManager.DisposeUpdateTask();
+                    //targetDescendent.TaskManager.ResetUpdateTaskCTS();
+
+
+                    targetDescendent.TaskManager._CancelFollowerTasks();
 
                     //target.NullifyValueWithoutShiftingToPrevious();
 
@@ -247,6 +264,19 @@ namespace RTSP.Core
                 }
 
 
+            }
+        }
+
+        private void _CancelFollowerTasks()
+        {
+            foreach (var cts_kv in _node.TaskManager._followerTaskCTSList)
+            {
+                CancellationTokenSource cts = cts_kv.Value;
+
+                if (cts is null)
+                    return;
+
+                cts.Cancel();
             }
         }
 
@@ -277,16 +307,6 @@ namespace RTSP.Core
             }
 
             return _updateTask.Status;
-        }
-
-        internal void DisposeUpdateTask()
-        {
-            if (_updateTask != null)
-            {
-                //_updateTask.Dispose();
-                _updateTask = null;
-                _logger.Debug($"{_node.T()} DisposeUpdateTask().");
-            }
         }
 
     }
