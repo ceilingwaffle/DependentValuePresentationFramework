@@ -122,7 +122,7 @@ namespace RTSP.Core
 
             if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
             {
-                _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask.Status.ToString()})");
+                _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask?.Status.ToString()})");
 
                 DisposeUpdateTask();
                 ResetUpdateTaskCTS();
@@ -145,7 +145,7 @@ namespace RTSP.Core
                 // TODO: _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
                 _updateTaskCTS.CancelAfter(_updateTimeLimit);
 
-                if (_HandleUpdateTaskCancellation())
+                if (_NullifyValueIfUpdateTaskIsCancelled())
                     return;
 
                 //foreach (var preceder in _node.Preceders)
@@ -156,18 +156,18 @@ namespace RTSP.Core
                 //}
 
                 //Task.WaitAll(_GetPrecederUpdateTasks());
-                await Task.WhenAll(_GetPrecederUpdateTasks());
+                await Task.WhenAll(_GetPrecederUpdateTasks()).ConfigureAwait(false);
 
-                if (_HandleUpdateTaskCancellation())
+                if (_NullifyValueIfUpdateTaskIsCancelled())
                     return;
 
                 object value = null;
 
                 try
                 {
-                    value = await _node.DetermineValueAsync();
+                    value = await _node.DetermineValueAsync().ConfigureAwait(false);
 
-                    if (_HandleUpdateTaskCancellation())
+                    if (_NullifyValueIfUpdateTaskIsCancelled())
                         return;
 
                     _node.SetValue(value);
@@ -185,7 +185,7 @@ namespace RTSP.Core
 
         }
 
-        private bool _HandleUpdateTaskCancellation()
+        private bool _NullifyValueIfUpdateTaskIsCancelled()
         {
             if (!_updateTaskCTS.IsCancellationRequested)
                 return false;
