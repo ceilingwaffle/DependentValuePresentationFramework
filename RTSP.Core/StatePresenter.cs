@@ -16,7 +16,7 @@ namespace RTSP.Core
         private readonly List<Action<State>> _eventHandlers_NewState;
 
         // TODO: Load this from config
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(100);
+        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(50);
 
         public StatePresenter()
         {
