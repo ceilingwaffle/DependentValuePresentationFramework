@@ -154,16 +154,25 @@ namespace RTSP.Core
                 if (_HandleUpdateTaskCancellation())
                     return;
 
-                // TODO: calculate value
-                var value = await _node.DetermineValueAsync();
-                if (_HandleUpdateTaskCancellation())
-                    return;
+                object value = null;
 
-                _node.SetValue(value);
+                try
+                {
+                    value = await _node.DetermineValueAsync();
 
-                _CancelFollowerTasksIfValueUpdated();
+                    if (_HandleUpdateTaskCancellation())
+                        return;
 
-                _logger.Debug($"{_node.T()}updateTask completed.");
+                    _node.SetValue(value);
+
+                    _CancelFollowerTasksIfValueUpdated();
+
+                    _logger.Debug($"{_node.T()}updateTask completed.");
+                }
+                catch (AggregateException ae)
+                {
+                    _logger.Error("Caught Task Error", ae);
+                }
 
             }, _updateTaskCTS.Token);
 

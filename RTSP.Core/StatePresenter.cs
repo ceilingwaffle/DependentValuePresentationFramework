@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,10 +16,11 @@ namespace RTSP.Core
         private readonly List<Action<State>> _eventHandlers_NewState;
 
         // TODO: Load this from config
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(100);
+        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(3000);
 
         public StatePresenter()
         {
+            //LogAllExceptions();
             NodeSupervisor = new NodeSupervisor();
             _stateBuilder = new StateBuilder(NodeSupervisor);
             _eventHandlers_NewState = new List<Action<State>>();
@@ -71,6 +73,16 @@ namespace RTSP.Core
         private void ProcessEventHandlers_NewStateCreated(State state)
         {
             _eventHandlers_NewState.ForEach(eventHandler => eventHandler(state));
+        }
+
+        private void LogAllExceptions()
+        {
+            AppDomain.CurrentDomain.FirstChanceException += ExceptionLogHandler;
+        }
+
+        private void ExceptionLogHandler(object source, FirstChanceExceptionEventArgs e)
+        {
+            _logger.Error($"***Global Exception thrown*** {e.Exception.Message}");
         }
     }
 }
