@@ -20,7 +20,7 @@ namespace RTSP.Core
 
         public StatePresenter()
         {
-            //LogAllExceptions();
+            LogAllExceptions();
             NodeSupervisor = new NodeSupervisor();
             _stateBuilder = new StateBuilder(NodeSupervisor);
             _eventHandlers_NewState = new List<Action<State>>();
