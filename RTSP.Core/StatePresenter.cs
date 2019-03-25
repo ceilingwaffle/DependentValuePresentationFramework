@@ -52,6 +52,9 @@ namespace RTSP.Core
 
                 await Task.Delay(_scannerInterval);
 
+                // TODO: Shift the "latest" value to "previous" and copy each value on the state to "latest" for each node.
+                //       This is to prevent situations where e.g. MapTime from having equal "current" and "previous" values despite the current and previous values on the State having different values.
+
                 // do its best to set as many Node values as possible on the State (not all Nodes will have finished updating yet).
                 // build the state
                 State state = _stateBuilder.Build();
