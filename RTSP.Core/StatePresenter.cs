@@ -16,7 +16,7 @@ namespace RTSP.Core
         private readonly List<Action<State>> _eventHandlers_NewState;
 
         // TODO: Load this from config
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(3000);
+        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(100);
 
         public StatePresenter()
         {
@@ -82,7 +82,7 @@ namespace RTSP.Core
 
         private void ExceptionLogHandler(object source, FirstChanceExceptionEventArgs e)
         {
-            _logger.Error($"***Global Exception thrown*** {e.Exception.Message}");
+            _logger.Error($"\n\tError: '{e.Exception.Message}' thrown in '{source.GetType()}: {e.Exception.StackTrace}'\n");
         }
     }
 }

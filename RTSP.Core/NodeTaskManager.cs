@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -139,18 +140,24 @@ namespace RTSP.Core
         {
             return Task.Run(async () =>
             {
+                _logger.Debug($"{_node.T()} Running Update Task...");
+
                 // TODO: _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
                 _updateTaskCTS.CancelAfter(_updateTimeLimit);
 
                 if (_HandleUpdateTaskCancellation())
                     return;
 
-                foreach (var preceder in _node.Preceders)
-                {
-                    _logger.Debug($"{_node.T()} requesting update from preceder: {preceder.GetType().ToString()}");
-                    await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
-                }
+                //foreach (var preceder in _node.Preceders)
+                //{
+                //    // TODO: these should execute in parallel
+                //    _logger.Debug($"{_node.T()} Requesting update from preceder: {preceder.GetType().ToString()}");
+                //    await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
+                //}
+
                 //Task.WaitAll(_GetPrecederUpdateTasks());
+                await Task.WhenAll(_GetPrecederUpdateTasks());
+
                 if (_HandleUpdateTaskCancellation())
                     return;
 
@@ -167,7 +174,7 @@ namespace RTSP.Core
 
                     _CancelFollowerTasksIfValueUpdated();
 
-                    _logger.Debug($"{_node.T()}updateTask completed.");
+                    _logger.Debug($"{_node.T()} Update Task completed: {_updateTask?.Status.ToString()}");
                 }
                 catch (AggregateException ae)
                 {
@@ -176,32 +183,6 @@ namespace RTSP.Core
 
             }, _updateTaskCTS.Token);
 
-            //return Task.Run(async () =>
-            //{
-            //    if (_updateTaskCTS.IsCancellationRequested)
-            //    {
-            //        _logger.Debug($"{_node.T()} Cancellation was requested. Not continuing with calc/data fetching.");
-            //        return;
-            //    }
-
-            //    foreach (var preceder in _node.Preceders)
-            //    {
-            //        _logger.Debug($"{_node.T()} requesting update from preceder: {preceder.GetType().ToString()}");
-            //        await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
-            //    }
-
-            //    //Task.WaitAll(_GetPrecederUpdateTasks());
-
-            //    // TODO: calculate value
-            //    var value = await _node.DetermineValueAsync();
-            //    _node.SetValue(value);
-
-            //    // TODO: Need to cancel all children of children also (not just direct children)
-            //    _CancelFollowerTasksIfValueUpdated();
-
-            //    _logger.Debug($"{_node.T()}updateTask completed.");
-
-            //}, _updateTaskCTS.Token);
         }
 
         private bool _HandleUpdateTaskCancellation()
@@ -214,6 +195,10 @@ namespace RTSP.Core
             return true;
         }
 
+        /// <summary>
+        /// This Node's value changed, meaning all follower node values are now
+        /// potentially expired, so issue a cancel to all follower update tasks.
+        /// </summary>
         private void _CancelFollowerTasksIfValueUpdated()
         {
             if (!_node.ValueChanged())
@@ -224,31 +209,10 @@ namespace RTSP.Core
             {
                 _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
 
-                // This Node's value changed, meaning all follower node values are now potentially expired.
-                // So issue a cancel to all follower update tasks.
-
-
-                //foreach (var follower in _node.Followers)
-                //{
-                //    //if (follower.TaskManager.GetUpdateTaskStatus() == TaskStatus.Running)
-                //    //{
-                //    //    _logger.Debug($"{_node.T()} Issuing cancel to running follower {follower.T()}...");
-                //    //    follower.TaskManager._updateTaskCTS.Cancel();
-                //    //}
-
-                //    Node f = follower;
-
-                //    f.TaskManager.DisposeUpdateTask();
-                //    f.NullifyValueWithoutShiftingToPrevious();
-
-                //}
-
                 HashSet<Node> toBeVisited = new HashSet<Node>();
 
                 foreach (var follower in _node.Followers)
-                {
                     toBeVisited.Add(follower);
-                }
 
                 while (toBeVisited.Count > 0)
                 {
@@ -256,23 +220,17 @@ namespace RTSP.Core
                     toBeVisited.Remove(targetDescendent);
 
                     _logger.Debug($"{_node.T()} Issuing cancel to follower {targetDescendent.T()}...");
-                    //targetDescendent.TaskManager.DisposeUpdateTask();
-                    //targetDescendent.TaskManager.ResetUpdateTaskCTS();
-
-
                     targetDescendent.TaskManager._CancelFollowerTasks();
 
-                    //target.NullifyValueWithoutShiftingToPrevious();
+                    // TODO: Add StateAttribute to Node allowing toggle of "nullify value if any parent value changes", then conditionally check for it and run NullifyValueWithoutShiftingToPrevious() if true.
+                    // TODO: Fix NullifyValueWithoutShiftingToPrevious() setting the value to null unnecessarily (e.g. IsPaused swapping between true and false on the State when MapTime value changes)
+                    //targetDescendent.NullifyValueWithoutShiftingToPrevious();
 
                     foreach (var follower in targetDescendent.Followers)
-                    {
                         toBeVisited.Add(follower);
-                    }
 
-                    _logger.Debug($"toBeVisited.Count: {toBeVisited.Count.ToString()}");
+                    //_logger.Debug($"toBeVisited.Count: {toBeVisited.Count.ToString()}");
                 }
-
-
             }
         }
 
@@ -289,23 +247,24 @@ namespace RTSP.Core
             }
         }
 
-        //private Task[] _GetPrecederUpdateTasks()
-        //{
-        //    var preceders = _node.Preceders.ToArray();
-        //    var precederTasks = new Task[_node.Preceders.Count()];
+        private Task[] _GetPrecederUpdateTasks()
+        {
+            var preceders = _node.Preceders.ToArray();
+            var precederTasks = new Task[_node.Preceders.Count()];
 
-        //    for (int i = 0; i < _node.Preceders.Count(); i++)
-        //    {
-        //        var preceder = preceders[i];
+            for (int i = 0; i < _node.Preceders.Count(); i++)
+            {
+                var preceder = preceders[i];
 
-        //        if (preceder is null)
-        //            continue;
+                if (preceder is null)
+                    continue;
 
-        //        precederTasks[i] = preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
-        //    }
+                _logger.Debug($"{_node.T()} Requesting update from preceder: {preceder.GetType().ToString()}");
+                precederTasks[i] = preceder.TaskManager.UpdateAsync();
+            }
 
-        //    return precederTasks;
-        //}
+            return precederTasks;
+        }
 
         internal TaskStatus GetUpdateTaskStatus()
         {
