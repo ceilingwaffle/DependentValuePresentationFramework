@@ -178,7 +178,7 @@ namespace RTSP.Core
                 }
                 catch (AggregateException ae)
                 {
-                    _logger.Error("Caught Task Error", ae);
+                    _logger.Error($"Caught Task Error: {ae.Message}");
                 }
 
             }, _updateTaskCTS.Token);
@@ -223,7 +223,6 @@ namespace RTSP.Core
                     targetDescendent.TaskManager._CancelFollowerTasks();
 
                     // TODO: Add StateAttribute to Node allowing toggle of "nullify value if any parent value changes", then conditionally check for it and run NullifyValueWithoutShiftingToPrevious() if true.
-                    // TODO: Fix NullifyValueWithoutShiftingToPrevious() setting the value to null unnecessarily (e.g. IsPaused swapping between true and false on the State when MapTime value changes)
                     targetDescendent.NullifyValueWithoutShiftingToPrevious();
 
                     foreach (var follower in targetDescendent.Followers)
