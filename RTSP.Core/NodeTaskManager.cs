@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -133,7 +131,10 @@ namespace RTSP.Core
                 _updateTask = GetUpdateTask();
             }
 
-            await _updateTask.ConfigureAwait(false);
+            if (!_updateTask.IsCanceled)
+            {
+                await _updateTask.ConfigureAwait(false);
+            }
         }
 
         private Task GetUpdateTask()
