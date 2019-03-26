@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RTSP.Core
 {
-    internal class NodeTaskManager
+    internal class NodeTaskManager : IDisposable
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -224,7 +224,7 @@ namespace RTSP.Core
 
                     // TODO: Add StateAttribute to Node allowing toggle of "nullify value if any parent value changes", then conditionally check for it and run NullifyValueWithoutShiftingToPrevious() if true.
                     // TODO: Fix NullifyValueWithoutShiftingToPrevious() setting the value to null unnecessarily (e.g. IsPaused swapping between true and false on the State when MapTime value changes)
-                    //targetDescendent.NullifyValueWithoutShiftingToPrevious();
+                    targetDescendent.NullifyValueWithoutShiftingToPrevious();
 
                     foreach (var follower in targetDescendent.Followers)
                         toBeVisited.Add(follower);
@@ -277,5 +277,9 @@ namespace RTSP.Core
             return _updateTask.Status;
         }
 
+        public void Dispose()
+        {
+            _updateTaskCTS.Dispose();
+        }
     }
 }
