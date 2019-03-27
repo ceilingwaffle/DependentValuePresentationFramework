@@ -22,6 +22,9 @@ namespace RTSP.Core
         /// key = Node Type, value = CTS
         /// </summary>
         private readonly Dictionary<Type, CancellationTokenSource> _followerTaskCTSList = new Dictionary<Type, CancellationTokenSource>();
+
+        private readonly object _followerTaskCTSListLock = new object();
+        
         // TODO: Load this from config
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
 
@@ -133,6 +136,7 @@ namespace RTSP.Core
 
             if (!_updateTask.IsCanceled)
             {
+                // TODO: Bug when we switch maps really fast in osu, after ~6 seconds it throws System.Threading.Tasks.TaskCanceledException
                 await _updateTask.ConfigureAwait(false);
             }
         }
@@ -236,7 +240,8 @@ namespace RTSP.Core
 
         private void _CancelFollowerTasks()
         {
-            foreach (var cts_kv in _node.TaskManager._followerTaskCTSList)
+            // ToList is used to avoid error thrown in rare chance where a thread modifies the contents while another thread is enumerating
+            foreach (var cts_kv in _node.TaskManager._followerTaskCTSList.ToList())
             {
                 CancellationTokenSource cts = cts_kv.Value;
 
