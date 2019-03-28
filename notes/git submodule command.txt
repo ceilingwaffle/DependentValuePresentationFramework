@@ -1,0 +1,6 @@
+# Add submodule to current directory
+git submodule add -f <github URL>
+
+# Download submodules (from main git directory)
+git submodule update --init --recursive
+
