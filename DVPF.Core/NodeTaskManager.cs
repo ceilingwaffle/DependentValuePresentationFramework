@@ -41,7 +41,7 @@ namespace DVPF.Core
 
             foreach (var preceder in _node.Preceders)
             {
-                preceder.TaskManager.AddFollowerCTS(this.GetType(), _updateTaskCTS);
+                preceder.TaskManager.AddFollowerCTS(_node.GetType(), _updateTaskCTS);
             }
 
             _logger.Debug($"{_node.T()} _ResetUpdateTaskCTS().");
@@ -137,7 +137,7 @@ namespace DVPF.Core
             if (!_updateTask.IsCanceled)
             {
                 // TODO: Bug when we switch maps really fast in osu, after ~6 seconds it throws System.Threading.Tasks.TaskCanceledException
-                await _updateTask.ConfigureAwait(false);
+                await _updateTask;
             }
         }
 
