@@ -23,7 +23,7 @@ namespace DVPF.Core
             _eventHandlers_NewState = new List<Action<State>>();
         }
 
-        public async Task StartAsync()
+        public async Task StartScannerLoopAsync()
         {
             NodeSupervisor.BuildNodeCollections();
 
@@ -71,6 +71,7 @@ namespace DVPF.Core
                     _logger.Error(oce.Message);
                 }
 
+                // TODO: Fix unnecessary delay due to execution time + delay time (delay time should be reduced by the execution time, but still maintain some minimum delay time so the tasks don't go haywire)
                 await Task.Delay(ScannerInterval);
 
                 // TODO: Shift the "latest" value to "previous" and copy each value on the state to "latest" for each node.

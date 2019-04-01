@@ -97,13 +97,9 @@ namespace DVPF.Core
         //    await updateTask.ConfigureAwait(false);
         //}
 
-        //SemaphoreSlim mutex = new SemaphoreSlim(1);
-
         internal async Task UpdateAsync()
         {
             // TODO: Figure out when to check the CTS to not continue with the task. 
-
-            //await mutex.WaitAsync().ConfigureAwait(false);
 
             try
             {
@@ -125,23 +121,13 @@ namespace DVPF.Core
                     _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
                 }
 
-                //if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
-                //{
-                //    _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask?.Status.ToString()})");
-
-                //    DisposeUpdateTask();
-                //    ResetUpdateTaskCTS();
-                //}
-
                 if (_updateTask is null)
                 {
-                    _updateTask = GetUpdateTask();
+                    _updateTask = CreateUpdateTask();
                 }
 
                 if (!_updateTask.IsCanceled)
                 {
-                    // TODO: Bug when we switch maps really fast in osu, after ~6 seconds it throws System.Threading.Tasks.TaskCanceledException
-
                     try
                     {
                         await _updateTask;
@@ -170,22 +156,13 @@ namespace DVPF.Core
             {
                 _logger.Error(e);
             }
-            //finally
-            //{
-            //    mutex.Release();
-            //}
-
-
             
         }
 
-
-
-        private async Task GetUpdateTask()
+        private async Task CreateUpdateTask()
         {
             try
             {
-
                 _logger.Debug($"{_node.T()} Running Update Task...");
 
                 // TODO: _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
@@ -222,7 +199,6 @@ namespace DVPF.Core
             {
                 _logger.Error($"Caught Task Error: {ae.Message}");
             }
-
 
         }
 
