@@ -24,7 +24,7 @@ namespace DVPF.Core
         private readonly Dictionary<Type, CancellationTokenSource> _followerTaskCTSList = new Dictionary<Type, CancellationTokenSource>();
 
         private readonly object _followerTaskCTSListLock = new object();
-        
+
         // TODO: Load this from config
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
 
@@ -97,54 +97,95 @@ namespace DVPF.Core
         //    await updateTask.ConfigureAwait(false);
         //}
 
+        //SemaphoreSlim mutex = new SemaphoreSlim(1);
+
         internal async Task UpdateAsync()
         {
             // TODO: Figure out when to check the CTS to not continue with the task. 
 
+            //await mutex.WaitAsync().ConfigureAwait(false);
 
+            try
+            {
+                //if (_updateTask != null)
+                //{
+                //    _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
+                //}
 
-            _logger.Debug($"{_node.T()} UpdateAsync() START...");
+                //if (GetUpdateTaskStatus() == TaskStatus.Running)
+                //{
+                //    _logger.Debug($"{_node.T()} -----------UpdateAsync() ALREADY RUNNING.");
+                //    return;
+                //}
 
-            //if (_updateTask != null)
+                _logger.Debug($"{_node.T()} UpdateAsync() START...");
+
+                if (_updateTask?.Status == TaskStatus.Running)
+                {
+                    _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
+                }
+
+                if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
+                {
+                    _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask?.Status.ToString()})");
+
+                    DisposeUpdateTask();
+                    ResetUpdateTaskCTS();
+                }
+
+                if (_updateTask is null)
+                {
+                    _updateTask = GetUpdateTask();
+                }
+
+                if (!_updateTask.IsCanceled)
+                {
+                    // TODO: Bug when we switch maps really fast in osu, after ~6 seconds it throws System.Threading.Tasks.TaskCanceledException
+
+                    try
+                    {
+                        await _updateTask;
+                    }
+                    catch (AggregateException ae)
+                    {
+                        _logger.Error(ae.Message);
+
+                        foreach (var e in ae.InnerExceptions)
+                        {
+                            _logger.Error(e.Message);
+                        }
+                    }
+                    catch (TaskCanceledException tce)
+                    {
+                        _logger.Error(tce.Message);
+                    }
+                    catch (OperationCanceledException oce)
+                    {
+                        _logger.Error(oce.Message);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+            //finally
             //{
-            //    _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
+            //    mutex.Release();
             //}
 
-            //if (GetUpdateTaskStatus() == TaskStatus.Running)
-            //{
-            //    _logger.Debug($"{_node.T()} -----------UpdateAsync() ALREADY RUNNING.");
-            //    return;
-            //}
 
-            if (_updateTask?.Status == TaskStatus.Running)
-            {
-                _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
-            }
-
-            if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
-            {
-                _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask?.Status.ToString()})");
-
-                DisposeUpdateTask();
-                ResetUpdateTaskCTS();
-            }
-
-            if (_updateTask is null)
-            {
-                _updateTask = GetUpdateTask();
-            }
-
-            if (!_updateTask.IsCanceled)
-            {
-                // TODO: Bug when we switch maps really fast in osu, after ~6 seconds it throws System.Threading.Tasks.TaskCanceledException
-                await _updateTask;
-            }
+            
         }
 
-        private Task GetUpdateTask()
+
+
+        private async Task GetUpdateTask()
         {
-            return Task.Run(async () =>
+            try
             {
+
                 _logger.Debug($"{_node.T()} Running Update Task...");
 
                 // TODO: _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
@@ -160,33 +201,28 @@ namespace DVPF.Core
                 //    await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
                 //}
 
-                //Task.WaitAll(_GetPrecederUpdateTasks());
-                await Task.WhenAll(_GetPrecederUpdateTasks()).ConfigureAwait(false);
+                await Task.WhenAll(_GetPrecederUpdateTasks());
 
                 if (_NullifyValueIfUpdateTaskIsCancelled())
                     return;
 
                 object value = null;
 
-                try
-                {
-                    value = await _node.DetermineValueAsync().ConfigureAwait(false);
+                value = await _node.DetermineValueAsync();
 
-                    if (_NullifyValueIfUpdateTaskIsCancelled())
-                        return;
+                if (_NullifyValueIfUpdateTaskIsCancelled())
+                    return;
 
-                    _node.SetValue(value);
+                _node.SetValue(value);
+                _CancelFollowerTasksIfValueUpdated();
 
-                    _CancelFollowerTasksIfValueUpdated();
+                _logger.Debug($"{_node.T()} Update Task completed: {_updateTask?.Status.ToString()}");
+            }
+            catch (AggregateException ae)
+            {
+                _logger.Error($"Caught Task Error: {ae.Message}");
+            }
 
-                    _logger.Debug($"{_node.T()} Update Task completed: {_updateTask?.Status.ToString()}");
-                }
-                catch (AggregateException ae)
-                {
-                    _logger.Error($"Caught Task Error: {ae.Message}");
-                }
-
-            }, _updateTaskCTS.Token);
 
         }
 
@@ -197,6 +233,7 @@ namespace DVPF.Core
 
             _logger.Debug($"{_node.T()} Cancellation was requested. Resetting value to null. (a)");
             _node.NullifyValueWithoutShiftingToPrevious();
+
             return true;
         }
 
