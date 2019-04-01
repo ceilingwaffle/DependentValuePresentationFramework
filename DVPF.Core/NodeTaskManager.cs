@@ -264,8 +264,13 @@ namespace DVPF.Core
                     _logger.Debug($"{_node.T()} Issuing cancel to follower {targetDescendent.T()}...");
                     targetDescendent.TaskManager._CancelFollowerTasks();
 
-                    // TODO: Add StateAttribute to Node allowing toggle of "nullify value if any parent value changes", then conditionally check for it and run NullifyValueWithoutShiftingToPrevious() if true.
-                    targetDescendent.NullifyValueWithoutShiftingToPrevious();
+                    // Check the StateAttribute of Node allowing toggle of "nullify value if any parent value changes", then conditionally check for it and run NullifyValueWithoutShiftingToPrevious() if true.
+                    if (targetDescendent.IsStrictValue())
+                    {
+                        _logger.Debug($"{targetDescendent.T()} Strict value TRUE. Nullifying value...");
+                        targetDescendent.NullifyValueWithoutShiftingToPrevious();
+
+                    }
 
                     foreach (var follower in targetDescendent.Followers)
                         toBeVisited.Add(follower);

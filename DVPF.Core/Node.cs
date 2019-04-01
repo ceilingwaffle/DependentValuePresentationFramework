@@ -207,6 +207,11 @@ namespace DVPF.Core
             return GetStatePropertyAttribute()?.Enabled == true;
         }
 
+        public bool IsStrictValue()
+        {
+            return GetStatePropertyAttribute()?.StrictValue == true;
+        }
+
         internal object GetPreviousValue(int age)
         {
             lock (_valueLock)
