@@ -35,8 +35,6 @@ namespace DVPF.Core
             // Create the token source.
             _scannerTaskCTS = new CancellationTokenSource();
 
-            // TODO: Optimize - fix delay sometimes between states being created
-
             // Set the task.
             _scannerTask = CreateScannerInfiniteLoopTask((now, ct) => DoWorkAsync(ct), _scannerTaskCTS.Token);
 
