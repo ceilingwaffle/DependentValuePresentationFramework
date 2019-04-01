@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DVPF.Core
@@ -12,11 +10,10 @@ namespace DVPF.Core
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         public NodeSupervisor NodeSupervisor { get; private set; }
+        public static TimeSpan ScannerInterval { get; set; } = TimeSpan.FromMilliseconds(250);
+
         private readonly StateBuilder _stateBuilder;
         private readonly List<Action<State>> _eventHandlers_NewState;
-
-        // TODO: Load this from config
-        private TimeSpan _scannerInterval = TimeSpan.FromMilliseconds(250);
 
         public StatePresenter()
         {
@@ -74,7 +71,7 @@ namespace DVPF.Core
                     _logger.Error(oce.Message);
                 }
 
-                await Task.Delay(_scannerInterval);
+                await Task.Delay(ScannerInterval);
 
                 // TODO: Shift the "latest" value to "previous" and copy each value on the state to "latest" for each node.
                 //       This is to prevent situations where e.g. MapTime from having equal "current" and "previous" values despite the current and previous values on the State having different values.
@@ -85,6 +82,25 @@ namespace DVPF.Core
 
                 // pass the state to the event handlers
                 ProcessEventHandlers_NewStateCreated(state);
+
+                // reset all Node update tasks
+                foreach (var node in Node.InitializedNodes)
+                {
+                    TaskStatus taskStatus = node.TaskManager.GetUpdateTaskStatus();
+
+                    if (taskStatus == TaskStatus.WaitingToRun // when null
+                        || taskStatus == TaskStatus.Canceled
+                        || taskStatus == TaskStatus.RanToCompletion
+                        || taskStatus == TaskStatus.Faulted
+                    )
+                    {
+                        _logger.Debug($"{node.T()} Resetting _updateTask (task status: {taskStatus.ToString()})");
+
+                        node.TaskManager.DisposeUpdateTask();
+                        node.TaskManager.ResetUpdateTaskCTS();
+                    }
+                }
+
             }
 
         }

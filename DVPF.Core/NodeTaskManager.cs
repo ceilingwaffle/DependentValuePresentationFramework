@@ -125,13 +125,13 @@ namespace DVPF.Core
                     _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
                 }
 
-                if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
-                {
-                    _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask?.Status.ToString()})");
+                //if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
+                //{
+                //    _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask?.Status.ToString()})");
 
-                    DisposeUpdateTask();
-                    ResetUpdateTaskCTS();
-                }
+                //    DisposeUpdateTask();
+                //    ResetUpdateTaskCTS();
+                //}
 
                 if (_updateTask is null)
                 {
