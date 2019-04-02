@@ -191,6 +191,10 @@ namespace DVPF.Core
                     return;
 
                 _node.SetValue(value);
+
+                if (_node.ValueChanged())
+                    _node.HandleValueChanged(value);
+
                 _CancelFollowerTasksIfValueUpdated();
 
                 _logger.Debug($"{_node.T()} Update Task completed: {_updateTask?.Status.ToString()}");

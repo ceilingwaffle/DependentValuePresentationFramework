@@ -20,6 +20,17 @@ namespace DVPF.Core
         {
         }
 
+        /// <summary>
+        /// Returns false if the Node does not exist (has not been initialized).
+        /// </summary>
+        /// <param name="nodeType"></param>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public bool TryGetNode(Type nodeType, out Node node)
+        {
+            return Node.InitializedNodes.TryGetValue(nodeType, out node);
+        }
+
         internal void BuildNodeCollections()
         {
             EnabledNodes = _CollectEnabledNodes(Node.InitializedNodes);

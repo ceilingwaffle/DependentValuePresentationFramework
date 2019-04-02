@@ -11,6 +11,7 @@ namespace DVPF.Core
         private readonly object _valueLock = new object();
         private LinkedList<object> _valueLedger;
         internal readonly NodeTaskManager TaskManager;
+        public event EventHandler<NodeEventArgs> OnValueChange = delegate { };
 
         public Node()
         {
@@ -32,6 +33,11 @@ namespace DVPF.Core
         internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
 
         public abstract Task<object> DetermineValueAsync();
+
+        internal void HandleValueChanged(object value)
+        {
+            OnValueChange(this, new NodeEventArgs(value));
+        }
 
         /// <summary>
         /// Valid if property is overridden and not defined as null/empty/whitespace.
