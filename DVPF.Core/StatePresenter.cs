@@ -7,12 +7,16 @@ using System.Threading.Tasks.Dataflow;
 
 namespace DVPF.Core
 {
+    // TODO: REFACTOR - Make code styling choices consistent across classes (e.g. underscore prefixes) - use a C# linter or something...
+
+    // TODO: REFACTOR - Comment all publically accessible methods and fields.
+
     public class StatePresenter
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         public NodeSupervisor NodeSupervisor { get; private set; }
-        public static TimeSpan ScannerInterval { get; set; } = TimeSpan.FromMilliseconds(250);
+        public static TimeSpan ScannerInterval { get; set; } = TimeSpan.FromMilliseconds(100);
 
         private readonly StateBuilder _stateBuilder;
         private readonly List<Action<State>> _eventHandlers_NewState;
@@ -130,10 +134,10 @@ namespace DVPF.Core
 
         private void _ProcessState()
         {
-            // TODO: Fix unnecessary delay due to execution time + delay time (delay time should be reduced by the execution time, but still maintain some minimum delay time so the tasks don't go haywire)
+            // TODO: OPTIMIZE - Fix unnecessary delay due to execution time + delay time (delay time should be reduced by the execution time, but still maintain some minimum delay time so the tasks don't go haywire)
             //await Task.Delay(ScannerInterval);
 
-            // TODO: Shift the "latest" value to "previous" and copy each value on the state to "latest" for each node.
+            // TODO: UNFINISHED - Shift the "latest" value to "previous" and copy each value on the state to "latest" for each node.
             //       This is to prevent situations where e.g. MapTime from having equal "current" and "previous" values despite the current and previous values on the State having different values.
 
             // do its best to set as many Node values as possible on the State (not all Nodes will have finished updating yet).

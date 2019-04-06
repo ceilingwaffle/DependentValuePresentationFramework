@@ -76,7 +76,7 @@ namespace DVPF.Core
 
         private void _ValidateNode(Node node)
         {
-            // TODO: Replace ArgumentException with custom Exception class for each potential invalid reason below (also replace in NodeTest.cs )
+            // TODO: REFACTOR - Replace ArgumentException with custom Exception class for each potential invalid reason below (also replace in NodeTest.cs )
 
             if (InitializedNodes.Exists(node))
                 throw new ArgumentException($"Node of type {node.GetType().ToString()} already initialized. Only one node of each node type is allowed.");
@@ -237,7 +237,7 @@ namespace DVPF.Core
             }
         }
 
-        internal bool ValueChanged()
+        public bool ValueChanged()
         {
             var current = GetPreviousValue(age: 0);
             var previous = GetPreviousValue(age: 1);
@@ -282,7 +282,7 @@ namespace DVPF.Core
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // to do: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
         // ~Node() {
         //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
         //   Dispose(false);
@@ -293,7 +293,7 @@ namespace DVPF.Core
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
+            // to do: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
         #endregion

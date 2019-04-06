@@ -25,7 +25,7 @@ namespace DVPF.Core
 
         private readonly object _followerTaskCTSListLock = new object();
 
-        // TODO: Load this from config
+        // TODO: UNFINISHED - Load this from config
         private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
 
         public NodeTaskManager(Node node)
@@ -99,8 +99,6 @@ namespace DVPF.Core
 
         internal async Task UpdateAsync()
         {
-            // TODO: Figure out when to check the CTS to not continue with the task. 
-
             try
             {
                 //if (_updateTask != null)
@@ -165,18 +163,11 @@ namespace DVPF.Core
             {
                 _logger.Debug($"{_node.T()} Running Update Task...");
 
-                // TODO: _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
+                // TODO: UNFINISHED - _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
                 _updateTaskCTS.CancelAfter(_updateTimeLimit);
 
                 if (_NullifyValueIfUpdateTaskIsCancelled())
                     return;
-
-                //foreach (var preceder in _node.Preceders)
-                //{
-                //    // TODO: these should execute in parallel
-                //    _logger.Debug($"{_node.T()} Requesting update from preceder: {preceder.GetType().ToString()}");
-                //    await preceder.TaskManager.UpdateAsync().ConfigureAwait(false);
-                //}
 
                 await Task.WhenAll(_GetPrecederUpdateTasks());
 
@@ -297,7 +288,7 @@ namespace DVPF.Core
         {
             if (_updateTask is null)
             {
-                // TODO: Something else like a custom UpdateTaskStatus class which extends TaskStatus but has a custom null status.
+                // TODO: REFACTOR - Something else like a custom UpdateTaskStatus class which extends TaskStatus but has a custom null status.
                 return TaskStatus.WaitingToRun;
             }
 
