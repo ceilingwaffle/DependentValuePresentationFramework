@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 
 namespace DVPF.Core
 {
+    // TODO: Remove underscore prefix for methods
+
     public abstract class Node : IDisposable
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();

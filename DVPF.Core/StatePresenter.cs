@@ -70,6 +70,8 @@ namespace DVPF.Core
         /// <returns></returns>
         private ITargetBlock<DateTimeOffset> CreateScannerInfiniteLoopTask(Func<DateTimeOffset, CancellationToken, Task> action, CancellationToken cancellationToken)
         {
+            // TODO: Look into using a BackgroundWorker instead of ActionBlock
+
             // Validate parameters.
             if (action == null) throw new ArgumentNullException("action");
 
