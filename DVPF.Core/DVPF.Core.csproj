@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+	<TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyTitle>RTSP.Core</AssemblyTitle>
     <Product>RTSP.Core</Product>
     <Copyright>Copyright ©  2019</Copyright>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
@@ -28,7 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
@@ -37,7 +40,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Tpl.Dataflow" Version="4.5.24" />
     <PackageReference Include="NLog" Version="4.6.1" />
     <PackageReference Include="NLog.Config" Version="4.6.1" />
     <PackageReference Include="NLog.Schema" Version="4.6.1" />
