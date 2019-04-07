@@ -9,3 +9,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("8653a255-b83d-4621-b25f-703a43c6eec9")]
+
+[assembly: InternalsVisibleTo("DVPF.Tests")]

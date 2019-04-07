@@ -38,7 +38,7 @@ namespace DVPF.Core
             //LeafNodes = _CollectLeafNodes(RootNodes);
         }
 
-        private NodeCollection _CollectEnabledNodes(NodeCollection initializedNodes)
+        internal NodeCollection _CollectEnabledNodes(NodeCollection initializedNodes)
         {
             var enabled = new NodeCollection();
 

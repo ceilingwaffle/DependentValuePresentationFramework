@@ -21,8 +21,8 @@ namespace DVPF.Tests
         protected void SetUp()
         {
             _nodeSupervisor = new NodeSupervisor();
-            Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
-            Helpers.InvokePrivateStaticMethod<Node>("ResetNodeStatePropertyNames");
+            Node.ResetInitializedNodes();
+            Node.ResetNodeStatePropertyNames();
         }
 
         [TearDown]
@@ -37,8 +37,8 @@ namespace DVPF.Tests
             var shouldBeEnabled = new ValidEnabledStatePropertyNode();
             var shouldNotBeEnabled = new DisabledStatePropertyNode();
 
-            NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-            NodeCollection enabledNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectEnabledNodes", initializedNodes);
+            NodeCollection initializedNodes = Node.InitializedNodes;
+            NodeCollection enabledNodes = _nodeSupervisor._CollectEnabledNodes(initializedNodes);
 
             CollectionAssert.Contains(enabledNodes, shouldBeEnabled);
             CollectionAssert.DoesNotContain(enabledNodes, shouldNotBeEnabled);
@@ -185,67 +185,68 @@ namespace DVPF.Tests
         //    }
         //}
 
-        /// <summary>
-        /// Returns an instance of a "dynamic" Node object (derived from the abstract Node class) with a unique class name.
-        /// </summary>
-        /// <returns></returns>
-        private static Node CreateDynamicNode()
-        {
-            Type baseType = typeof(Node);
+        ///// <summary>
+        ///// Returns an instance of a "dynamic" Node object (derived from the abstract Node class) with a unique class name.
+        ///// </summary>
+        ///// <returns></returns>
+        //private static Node CreateDynamicNode()
+        //{
+        //    Type baseType = typeof(Node);
 
-            AssemblyName asmName = new AssemblyName(
-                string.Format("{0}_{1}", "tmpAsm", Guid.NewGuid().ToString("N"))
-            );
+        //    AssemblyName asmName = new AssemblyName(
+        //        string.Format("{0}_{1}", "tmpAsm", Guid.NewGuid().ToString("N"))
+        //    );
 
-            // create in memory assembly only
-            AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
+        //    // create in memory assembly only
+        //    // If DefineDynamicAssembly is needed again in future, try this: https://stackoverflow.com/questions/36937276/is-there-any-replace-of-assemblybuilder-definedynamicassembly-in-net-core
+        //    AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
 
-            ModuleBuilder moduleBuilder = asmBuilder.DefineDynamicModule("core");
+        //    ModuleBuilder moduleBuilder = asmBuilder.DefineDynamicModule("core");
 
-            string proxyTypeName = string.Format("{0}", Guid.NewGuid().ToString("N"));
+        //    string proxyTypeName = string.Format("{0}", Guid.NewGuid().ToString("N"));
 
-            TypeBuilder typeBuilder = moduleBuilder.DefineType(proxyTypeName);
+        //    TypeBuilder typeBuilder = moduleBuilder.DefineType(proxyTypeName);
 
-            typeBuilder.SetParent(baseType);
+        //    typeBuilder.SetParent(baseType);
 
-            // define the "DetermineValue" abstract method implementation of class Node
-            DefineMethodOnTypeBuilder(
-                typeBuilder: typeBuilder,
-                methodName: "DetermineValueAsync",
-                methodReturnType: typeof(Task<object>),
-                methodReturnValue: Task.Run(() => { return new object(); })
-            );
+        //    // define the "DetermineValue" abstract method implementation of class Node
+        //    DefineMethodOnTypeBuilder(
+        //        typeBuilder: typeBuilder,
+        //        methodName: "DetermineValueAsync",
+        //        methodReturnType: typeof(Task<object>),
+        //        methodReturnValue: Task.Run(() => { return new object(); })
+        //    );
 
-            Type proxy = typeBuilder.CreateType();
+        //    Type proxy = typeBuilder.CreateType();
 
-            Node n = (Node)Activator.CreateInstance(proxy);
+        //    Node n = (Node)Activator.CreateInstance(proxy);
 
-            return n;
-        }
+        //    return n;
+        //}
 
-        /// <summary>
-        /// Defines the abstract method implementation of some class on the given TypeBuilder
-        /// </summary>
-        /// <param name="typeBuilder"></param>
-        /// <param name="methodName"></param>
-        /// <param name="methodReturnType"></param>
-        private static void DefineMethodOnTypeBuilder(TypeBuilder typeBuilder, string methodName, Type methodReturnType, object methodReturnValue)
-        {
-            // get the pointer address of the methodReturnValue object
-            // TODO: Bug where when we call DynamicNode.DetermineValueAsync() it throws "Bad class token".
-            GCHandle objHandle = GCHandle.Alloc(methodReturnValue, GCHandleType.WeakTrackResurrection);
-            int returnValueAddr = GCHandle.ToIntPtr(objHandle).ToInt32();
+        ///// <summary>
+        ///// Defines the abstract method implementation of some class on the given TypeBuilder
+        ///// </summary>
+        ///// <param name="typeBuilder"></param>
+        ///// <param name="methodName"></param>
+        ///// <param name="methodReturnType"></param>
+        //private static void DefineMethodOnTypeBuilder(TypeBuilder typeBuilder, string methodName, Type methodReturnType, object methodReturnValue)
+        //{
+        //    // get the pointer address of the methodReturnValue object
+        //    // TODO: Bug where when we call DynamicNode.DetermineValueAsync() it throws "Bad class token".
+        //    GCHandle objHandle = GCHandle.Alloc(methodReturnValue, GCHandleType.WeakTrackResurrection);
+        //    int returnValueAddr = GCHandle.ToIntPtr(objHandle).ToInt32();
 
-            MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName,
-                MethodAttributes.Public | MethodAttributes.Virtual, methodReturnType, Type.EmptyTypes);
+        //    MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName,
+        //        MethodAttributes.Public | MethodAttributes.Virtual, methodReturnType, Type.EmptyTypes);
 
-            ILGenerator generator = methodBuilder.GetILGenerator();
+        //    ILGenerator generator = methodBuilder.GetILGenerator();
 
-            generator.Emit(OpCodes.Ldobj, returnValueAddr);
-            generator.Emit(OpCodes.Ret);
+        //    generator.Emit(OpCodes.Ldobj, returnValueAddr);
+        //    generator.Emit(OpCodes.Ret);
 
-            typeBuilder.DefineMethodOverride(methodBuilder, typeBuilder.BaseType.GetMethod(methodName));
-        }
+        //    typeBuilder.DefineMethodOverride(methodBuilder, typeBuilder.BaseType.GetMethod(methodName));
+        //}
 
     }
 

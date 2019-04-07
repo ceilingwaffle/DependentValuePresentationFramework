@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>RTSP.Tests</RootNamespace>
-    <AssemblyName>RTSP.Tests</AssemblyName>
+    <RootNamespace>DVPF.Tests</RootNamespace>
+    <AssemblyName>DVPF.Tests</AssemblyName>
 	<TargetFramework>netcoreapp2.2</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -13,7 +13,7 @@
     <Copyright>Copyright ©  2019</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
@@ -31,17 +31,11 @@
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
-    <PackageReference Include="NUnit" Version="3.11.0" />
-    <PackageReference Include="NUnit.Console" Version="3.9.0" />
-    <PackageReference Include="NUnit.ConsoleRunner" Version="3.9.0" />
-    <PackageReference Include="NUnit.Extension.NUnitProjectLoader" Version="3.6.0" />
-    <PackageReference Include="NUnit.Extension.NUnitV2Driver" Version="3.7.0" />
-    <PackageReference Include="NUnit.Extension.NUnitV2ResultWriter" Version="3.6.0" />
-    <PackageReference Include="NUnit.Extension.TeamCityEventListener" Version="1.0.5" />
-    <PackageReference Include="NUnit.Extension.VSProjectLoader" Version="3.8.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
+    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DVPF.Core\DVPF.Core.csproj" />

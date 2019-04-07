@@ -20,8 +20,8 @@ namespace DVPF.Tests
         protected void SetUp()
         {
             _nodeCollection = new NodeCollection();
-            Helpers.InvokePrivateStaticMethod<Node>("ResetInitializedNodes");
-            Helpers.InvokePrivateStaticMethod<Node>("ResetNodeStatePropertyNames");
+            Node.ResetInitializedNodes();
+            Node.ResetNodeStatePropertyNames();
         }
 
         [TearDown]
