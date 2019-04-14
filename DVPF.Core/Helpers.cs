@@ -1,26 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DVPF.Core
+﻿namespace DVPF.Core
 {
+    using System;
+
+    /// <summary>
+    /// Helpers class
+    /// </summary>
     internal static class Helpers
     {
-        static Random _rnd = new Random();
+        /// <summary>
+        /// Instance of <classref name="System.Random">System.Random</classref>
+        /// </summary>
+        private static readonly Random Rand = new Random();
 
-        internal static int UnixTimestamp()
+        /// <summary>
+        /// Returns the current unix timestamp
+        /// </summary>
+        /// <returns>The current unix timestamp</returns>
+        internal static int GetCurrentUnixTimestamp()
         {
-            return (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            return (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
         }
 
-        internal static int Rand(int from, int to)
+        /// <summary>
+        /// Returns a random number between (inclusive) <paramref name="from"/> and <paramref name="to"/>.
+        /// </summary>
+        /// <param name="from">'Greater than or equal to' this number</param>
+        /// <param name="to">'Less than or equal to' this number</param>
+        /// <returns>a random number between (inclusive) <paramref name="from"/> and <paramref name="to"/></returns>
+        internal static int GetRandomNumberBetween(int from, int to)
         {
-            return _rnd.Next(from, to + 1);
+            return Rand.Next(from, to + 1);
         }
-
     }
-
 }

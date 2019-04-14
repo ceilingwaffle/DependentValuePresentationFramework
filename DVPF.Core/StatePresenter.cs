@@ -16,7 +16,7 @@ namespace DVPF.Core
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         public NodeSupervisor NodeSupervisor { get; private set; }
-        public static TimeSpan ScannerInterval { get; set; } = TimeSpan.FromMilliseconds(100);
+        public static TimeSpan ScannerInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
         private readonly StateBuilder _stateBuilder;
         private readonly List<Action<State>> _eventHandlers_NewState;
