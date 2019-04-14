@@ -4,8 +4,17 @@ namespace DVPF.Core
 {
     public class StatePropertyAttribute : Attribute
     {
+        /// <summary>
+        /// Whether or not this node's value is to be included as a property of <see cref="State"/>
+        /// </summary>
         internal bool Enabled { get; private set; } = false;
+
         internal string Name { get; private set; } = null;
+
+        /// <summary>
+        /// <para>Set to true if the target <see cref="Node"/>'s value should be set to null if any parent value changes.</para>
+        /// <para>See <seealso cref="Node.NullifyValueWithoutShiftingToPrevious"/></para>
+        /// </summary>
         internal bool StrictValue { get; private set; } = false;
 
         /// <summary>

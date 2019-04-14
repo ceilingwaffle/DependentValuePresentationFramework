@@ -8,7 +8,7 @@
     internal static class Helpers
     {
         /// <summary>
-        /// Instance of <classref name="System.Random">System.Random</classref>
+        /// Instance of <see cref="System.Random">System.Random</see>
         /// </summary>
         private static readonly Random Rand = new Random();
 
