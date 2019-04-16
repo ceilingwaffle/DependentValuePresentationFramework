@@ -160,12 +160,30 @@ namespace DVPF.Tests
             {
                 solarSystem.Follows(solarSystem);
             }
+            catch (Exception)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Excepted Exception (node cannot follow itself).");
+        }
+
+        [Test]
+        public void TestExceptionThrown_NodeFollowsNullNode()
+        {
+
+            var solarSystem = new SolarSystem();
+
+            try
+            {
+                solarSystem.Follows(null);
+            }
             catch (ArgumentException)
             {
                 Assert.Pass();
             }
 
-            Assert.Fail("Excepted ArgumentException (node cannot follow itself).");
+            Assert.Fail("Excepted ArgumentException (node cannot follow a null node).");
         }
 
         [Test]
@@ -177,14 +195,31 @@ namespace DVPF.Tests
             {
                 solarSystem.Precedes(solarSystem);
             }
+            catch (Exception)
+            {
+                Assert.Pass();
+            }
+
+            Assert.Fail("Excepted Exception (node cannot precede itself).");
+        }
+
+        [Test]
+        public void TestExceptionThrown_NodePrecedesNullNode()
+        {
+
+            var solarSystem = new SolarSystem();
+
+            try
+            {
+                solarSystem.Precedes(null);
+            }
             catch (ArgumentException)
             {
                 Assert.Pass();
             }
 
-            Assert.Fail("Excepted ArgumentException (node cannot precede itself).");
+            Assert.Fail("Excepted ArgumentException (node cannot precede a null node).");
         }
-
     }
 
     [StateProperty(enabled: true, name: "PropertyName")]

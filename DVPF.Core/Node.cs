@@ -20,6 +20,11 @@
         internal readonly NodeTaskManager TaskManager;
 
         /// <summary>
+        /// The capacity of the <see cref="valueLedger"/>.
+        /// </summary>
+        protected const int ValueLedgerCapacity = 2;
+
+        /// <summary>
         /// Instance of <see cref="NLog.Logger">NLog.Logger</see>.
         /// </summary>
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -35,14 +40,15 @@
         private readonly object valueLock = new object();
 
         /// <summary>
-        /// The capacity of the <see cref="valueLedger"/>.
-        /// </summary>
-        private readonly int valueLedgerCapacity = 2;
-
-        /// <summary>
         /// A list of the current and previous values for this node.
         /// </summary>
         private LinkedList<object> valueLedger;
+
+        /// <summary>
+        /// <para>To detect redundant calls</para>
+        /// <seealso cref="Dispose"/>
+        /// </summary>
+        private bool disposedValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Node"/> class.
@@ -107,6 +113,11 @@
         /// </exception>
         public void Precedes(params Node[] nodes)
         {
+            if (nodes is null)
+            {
+                throw new ArgumentNullException(nameof(nodes), "nodes param was null.");
+            }
+
             foreach (var node in nodes)
             {
                 if (node is null)
@@ -140,6 +151,11 @@
         /// </exception>
         public void Follows(params Node[] nodes)
         {
+            if (nodes is null)
+            {
+                throw new ArgumentNullException(nameof(nodes), "nodes param was null.");
+            }
+
             foreach (var node in nodes)
             {
                 if (node is null)
@@ -245,6 +261,36 @@
         }
 
         /// <summary>
+        /// Compares the current value of this node against the previous value. Note: Always false if either the current or previous value is null.
+        /// </summary>
+        /// <returns>false if the current value is null. false if the previous value is null. false if the current value is different to the previous value. otherwise true</returns>
+        public bool ValueChanged()
+        {
+            var current = this.GetPreviousValue(0);
+            var previous = this.GetPreviousValue(1);
+
+            if (current is null)
+            {
+                return false;
+            }
+
+            return !current.Equals(previous);
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// This code added to correctly implement the disposable pattern.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            this.Dispose(true);
+
+            // to do: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
         /// Initializes a new empty <see cref="NodeCollection"/> and assigns it to <see cref="InitializedNodes"/>
         /// </summary>
         internal static void ResetInitializedNodes()
@@ -283,16 +329,14 @@
         }
 
         /// <summary>
-        /// <para>Inserts the given value <paramref name="value"/> at the beginning of the <see cref="valueLedger"/> (index 0).</para>
-        /// <para>If the given value is null, set the beginning value to null without modifying any of the "previous" values (values that came before the most recent value).</para>
+        /// <para>Inserts <paramref name="value"/> at the beginning of <see cref="valueLedger"/> (at index 0).</para>
+        /// <para>If <paramref name="value"/> is null, set the index 0 value of <see cref="valueLedger"/> to null without modifying any of the "previous" values (values that were previously set).</para>
+        /// <para>If <paramref name="value"/> is NOT null, set the index 0 value of <see cref="valueLedger"/> to <paramref name="value"/>, and "shift" the previous values back in <see cref="valueLedger"/></para>
         /// </summary>
         /// <param name="value">
         /// The value to be added to the <see cref="valueLedger"/>.
         /// </param>
-        /// <returns>
-        /// true if <paramref name="value"/> was successfully added to <see cref="valueLedger"/>.
-        /// </returns>
-        internal bool SetValue(object value)
+        internal void SetValue(object value)
         {
             lock (this.valueLock)
             {
@@ -305,14 +349,12 @@
                     this.valueLedger.AddFirst(value);
                 }
 
-                while (this.valueLedger.Count > this.valueLedgerCapacity)
+                while (this.valueLedger.Count > ValueLedgerCapacity)
                 {
                     this.valueLedger.RemoveLast();
                 }
 
                 Logger.Debug("{0} Value set to '{1}' (ledger count {2}).", this.T(), value, this.valueLedger.Count);
-
-                return true;
             }
         }
 
@@ -335,6 +377,43 @@
 
                 Logger.Debug($"{this.T()} Value NULLIFIED (prev value = {this.GetPreviousValue()})");
             }
+        }
+
+        /// <summary>
+        /// Debug method - returns a padded string of this node's <see cref="Type"/>.
+        /// </summary>
+        /// <returns>Padded string of this node's <see cref="Type"/></returns>
+        internal string T()
+        {
+            return this.GetType().ToString().PadRight(30);
+        }
+
+        /// <summary>
+        /// For disposing this class object.
+        /// </summary>
+        /// <param name="disposing">
+        /// true if disposing
+        /// </param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                this.TaskManager?.Dispose();
+            }
+
+            // free unmanaged resources (unmanaged objects) and override a finalizer below.
+            // set large fields to null.
+            lock (this.valueLock)
+            {
+                this.valueLedger = null;
+            }
+
+            this.disposedValue = true;
         }
 
         /// <summary>
@@ -428,90 +507,22 @@
             {
                 this.valueLedger = new LinkedList<object>();
 
-                for (var i = 0; i < this.valueLedgerCapacity; i++)
+                for (var i = 0; i < ValueLedgerCapacity; i++)
                 {
                     this.valueLedger.AddFirst(new LinkedListNode<object>(null));
                 }
             }
         }
 
-        /// <summary>
-        ///     Set index 0 of ledger to null
-        /// </summary>
-        private void _ResetValue()
-        {
-            if (this.GetValue() != null) this.SetValue(null);
-        }
-
-        public bool ValueChanged()
-        {
-            var current = this.GetPreviousValue(0);
-            var previous = this.GetPreviousValue(1);
-
-            if (current is null)
-                return false;
-
-            if (current is null && previous is null)
-                return false;
-
-            return !current.Equals(previous);
-        }
-
-        // public void Dispose()
-        // {
-        // TaskManager.Dispose();
-        // GC.SuppressFinalize(this);
-        // return;
-        // }
-        #region IDisposable Support
-
-        private bool disposedValue; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposedValue)
-            {
-                if (disposing)
-                    if (this.TaskManager != null)
-                        this.TaskManager.Dispose();
-
-                // free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // set large fields to null.
-                this.valueLedger = null;
-
-                this.disposedValue = true;
-            }
-        }
-
-        // to do: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~Node() {
-        // // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        // Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
-
-            // to do: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-
-        #endregion
-
-#if DEBUG
-        internal string T()
-        {
-            return this.GetType().ToString().PadRight(30);
-        }
-
-#else
-        internal string T()
-        {
-            return this.GetType().ToString().PadRight(30);
-        }
-#endif
+        ///// <summary>
+        ///// Sets the current value of this node to null via <see cref="Node.SetValue"/>
+        ///// </summary>
+        ////private void ResetValue()
+        ////{
+        ////    if (this.GetValue() != null)
+        ////    {
+        ////        this.SetValue(null);
+        ////    }
+        ////}
     }
 }
