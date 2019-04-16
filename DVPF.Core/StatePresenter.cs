@@ -129,7 +129,7 @@ namespace DVPF.Core
                     _logger.Debug($"{node.T()} Resetting _updateTask (task status: {taskStatus.ToString()})");
 
                     node.TaskManager.DisposeUpdateTask();
-                    node.TaskManager.ResetUpdateTaskCTS();
+                    node.TaskManager.ResetUpdateTaskCts();
                 }
             }
         }

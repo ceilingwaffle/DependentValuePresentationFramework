@@ -56,7 +56,7 @@
         protected Node()
         {
             this.TaskManager = new NodeTaskManager(this);
-            this.TaskManager.ResetUpdateTaskCTS();
+            this.TaskManager.ResetUpdateTaskCts();
             this.InitValueLedger();
             this.AddInitializedNode(this);
         }

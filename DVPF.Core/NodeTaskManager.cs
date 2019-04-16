@@ -1,303 +1,359 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace DVPF.Core
+﻿namespace DVPF.Core
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using NLog;
+
+    /// <inheritdoc />
+    /// <summary>
+    /// Manages <see cref="Task"/>s for a single <see cref="Node"/>
+    /// </summary>
     internal class NodeTaskManager : IDisposable
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        /// <summary>
+        /// Instance of <see cref="NLog.Logger">NLog.Logger</see>.
+        /// </summary>
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// The node being managed.
         /// </summary>
-        private readonly Node _node;
-
-        private Task _updateTask;
-        private CancellationTokenSource _updateTaskCTS;
+        private readonly Node node;
 
         /// <summary>
-        /// key = Node Type, value = CTS
+        /// <para>A key-value collection of <see cref="Node"/> types (key) and their <see cref="CancellationTokenSource"/> (value) for nodes that follow this <see cref="node"/>.</para>
+        /// <para>Used for cancelling <see cref="updateTask"/> on followers of the <see cref="node"/></para>
         /// </summary>
-        private readonly Dictionary<Type, CancellationTokenSource> _followerTaskCTSList = new Dictionary<Type, CancellationTokenSource>();
+        private readonly Dictionary<Type, CancellationTokenSource> followerTaskCtsList = new Dictionary<Type, CancellationTokenSource>();
 
-        private readonly object _followerTaskCTSListLock = new object();
+        /// <summary>
+        /// Lock for <see cref="followerTaskCtsList"/>
+        /// </summary>
+        private readonly object followerTaskCtsListLock = new object();
 
-        // TODO: UNFINISHED - Load this from config
-        private TimeSpan _updateTimeLimit = TimeSpan.FromMilliseconds(10000);
+        // TODO: UNFINISHED - Load updateTimeLimit from config
 
+        /// <summary>
+        /// The maximum time the <see cref="updateTask"/> can spend executing before signaling <see cref="updateTaskCts"/> to cancel.
+        /// </summary>
+        private readonly TimeSpan updateTimeLimit = TimeSpan.FromMilliseconds(10000);
+
+        /// <summary>
+        /// Task to get and set the value of <see cref="node"/>.
+        /// </summary>
+        private Task updateTask;
+
+        /// <summary>
+        /// The <see cref="CancellationTokenSource"/> for <see cref="updateTask"/>.
+        /// </summary>
+        private CancellationTokenSource updateTaskCts;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NodeTaskManager"/> class.
+        /// </summary>
+        /// <param name="node">
+        /// The node to be managed by this manager.
+        /// </param>
         public NodeTaskManager(Node node)
         {
-            _node = node;
+            this.node = node;
         }
 
-        internal void ResetUpdateTaskCTS()
+        /// <inheritdoc />
+        /// <summary>
+        /// This code added to correctly implement the disposable pattern.
+        /// </summary>
+        public void Dispose()
         {
-            //if (_updateTaskCTS != null)
-            //    _updateTaskCTS.Dispose();
-            _updateTaskCTS = new CancellationTokenSource();
+            this.updateTaskCts.Dispose();
+        }
 
-            foreach (var preceder in _node.Preceders)
+        /// <summary>
+        /// Creates a new <see cref="updateTaskCts"/>, and assigns it to this manager and <see cref="followerTaskCtsList"/> for all nodes preceding this node.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+        internal void ResetUpdateTaskCts()
+        {
+            this.updateTaskCts = new CancellationTokenSource();
+
+            foreach (var preceder in this.node.Preceders)
             {
-                preceder.TaskManager.AddFollowerCTS(_node.GetType(), _updateTaskCTS);
+                preceder.TaskManager.AddFollowerCts(this.node.GetType(), this.updateTaskCts);
             }
 
-            _logger.Debug($"{_node.T()} _ResetUpdateTaskCTS().");
+            Logger.Debug($"{this.node.T()} _ResetUpdateTaskCTS().");
         }
 
+        /// <summary>
+        /// Sets <see cref="updateTask"/> to null.
+        /// </summary>
         internal void DisposeUpdateTask()
         {
-            if (_updateTask != null)
+            if (this.updateTask == null)
             {
-                //_updateTask.Dispose();
-                _updateTask = null;
-                _logger.Debug($"{_node.T()} DisposeUpdateTask().");
+                return;
             }
+
+            this.updateTask = null;
+
+            Logger.Debug($"{this.node.T()} DisposeUpdateTask().");
         }
 
-        private void AddFollowerCTS(Type followerNodeType, CancellationTokenSource updateTaskCTS)
-        {
-            _followerTaskCTSList[followerNodeType] = updateTaskCTS;
-        }
-
-        //internal async Task UpdateAsync()
-        //{
-        //    var updateTask = GetUpdateTask();
-
-        //    //if (_updateTask != null && (_updateTask.IsCanceled || _updateTask.IsCompleted || _updateTask.IsFaulted))
-        //    //{
-        //    //    _logger.Debug($"{_node.T()} Resetting _updateTask (task status: {_updateTask.Status.ToString()})");
-
-        //    //    DisposeUpdateTask();
-        //    //    ResetUpdateTaskCTS();
-        //    //}
-
-
-
-        //    //updateTask = GetUpdateTask();
-
-
-
-        //    //if (updateTask != null && updateTask.IsCompleted)
-        //    //{
-        //    //    _logger.Debug($"{_node.T()} task is already running.");
-        //    //    return;
-        //    //}
-
-        //    //if (updateTask.IsCanceled)
-        //    //{
-        //    //    _logger.Debug($"{_node.T()} task is cancelled");
-        //    //    return;
-        //    //}
-
-
-
-        //    await updateTask.ConfigureAwait(false);
-        //}
-
+        /// <summary>
+        /// Conditionally decides whether or not to create a new <see cref="updateTask"/> or await the existing one.
+        /// </summary>
+        /// <returns>
+        /// The update task <see cref="updateTask"/>.
+        /// </returns>
         internal async Task UpdateAsync()
         {
             try
             {
-                //if (_updateTask != null)
-                //{
-                //    _logger.Debug("{0} _updateTask already running (_updateTask != null).", _node.T());
-                //}
+                Logger.Debug($"{this.node.T()} UpdateAsync() START...");
 
-                //if (GetUpdateTaskStatus() == TaskStatus.Running)
-                //{
-                //    _logger.Debug($"{_node.T()} -----------UpdateAsync() ALREADY RUNNING.");
-                //    return;
-                //}
-
-                _logger.Debug($"{_node.T()} UpdateAsync() START...");
-
-                if (_updateTask?.Status == TaskStatus.Running)
+                if (this.updateTask?.Status == TaskStatus.Running)
                 {
-                    _logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", _node.T());
+                    Logger.Debug("{0} _updateTask already running (_updateTask?.Status == TaskStatus.Running).", this.node.T());
                 }
 
-                if (_updateTask is null)
+                if (this.updateTask is null)
                 {
-                    _updateTask = CreateUpdateTask();
+                    this.updateTask = this.ManageValueUpdate();
                 }
 
-                if (!_updateTask.IsCanceled)
+                if (!this.updateTask.IsCanceled)
                 {
                     try
                     {
-                        await _updateTask;
+                        await this.updateTask;
                     }
                     catch (AggregateException ae)
                     {
-                        _logger.Error(ae.Message);
+                        Logger.Error(ae.Message);
 
                         foreach (var e in ae.InnerExceptions)
                         {
-                            _logger.Error(e.Message);
+                            Logger.Error(e.Message);
                         }
                     }
                     catch (TaskCanceledException tce)
                     {
-                        _logger.Error(tce.Message);
+                        Logger.Error(tce.Message);
                     }
                     catch (OperationCanceledException oce)
                     {
-                        _logger.Error(oce.Message);
+                        Logger.Error(oce.Message);
                     }
                 }
-
             }
             catch (Exception e)
             {
-                _logger.Error(e);
+                Logger.Error(e);
             }
-            
         }
 
-        private async Task CreateUpdateTask()
+        /// <summary>
+        /// Gets the <see cref="TaskStatus"/> of the <see cref="updateTask"/>
+        /// </summary>
+        /// <returns>
+        /// The <see cref="TaskStatus"/> of the <see cref="updateTask"/>
+        /// </returns>
+        internal TaskStatus GetUpdateTaskStatus()
+        {
+            // TODO: REFACTOR - Something else like a custom UpdateTaskStatus class which extends TaskStatus but has a custom null status.
+            return this.updateTask?.Status ?? TaskStatus.WaitingToRun;
+        }
+
+        /// <summary>
+        /// Adds the given <paramref name="cts"/> to the node of type <paramref name="followerNodeType"/> (must be a follower of this <see cref="node"/>).
+        /// </summary>
+        /// <param name="followerNodeType">
+        /// The target node to be assigned the given <paramref name="cts"/>.
+        /// </param>
+        /// <param name="cts">
+        /// The <see cref="CancellationTokenSource"/> to be added to <see cref="updateTaskCts"/> on the follower node of type <paramref name="followerNodeType"/>.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if <paramref name="followerNodeType"/> is not a follower of <see cref="node"/>.
+        /// </exception>
+        private void AddFollowerCts(Type followerNodeType, CancellationTokenSource cts)
+        {
+            // TODO - Write unit test to assert that this exception gets thrown
+            if (!this.node.Followers.TryGetValue(followerNodeType, out _))
+            {
+                throw new ArgumentException($"{followerNodeType} is not a follower of {this.node.GetType()}.", nameof(followerNodeType));
+            }
+
+            lock (this.followerTaskCtsListLock)
+            {
+                this.followerTaskCtsList[followerNodeType] = cts;
+            }
+        }
+
+        /// <summary>
+        /// Creates a new update task if one is not already created. If an update task already exists (and is not cancelled), await its finish.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="Task"/>.
+        /// </returns>
+        private async Task ManageValueUpdate()
         {
             try
             {
-                _logger.Debug($"{_node.T()} Running Update Task...");
+                Logger.Debug($"{this.node.T()} Running Update Task...");
 
                 // TODO: UNFINISHED - _updateTaskCts.CancelAfter(t)  <- read "t" from Class Attribute, configurable per node
-                _updateTaskCTS.CancelAfter(_updateTimeLimit);
+                this.updateTaskCts.CancelAfter(this.updateTimeLimit);
 
-                if (_NullifyValueIfUpdateTaskIsCancelled())
+                if (this.NullifyValueIfUpdateTaskIsCancelled())
+                {
                     return;
+                }
 
-                await Task.WhenAll(_GetPrecederUpdateTasks());
+                await Task.WhenAll(this.GetPrecederUpdateTasks());
 
-                if (_NullifyValueIfUpdateTaskIsCancelled())
+                if (this.NullifyValueIfUpdateTaskIsCancelled())
+                {
                     return;
+                }
 
-                object value = null;
+                var value = await this.node.DetermineValueAsync();
 
-                value = await _node.DetermineValueAsync();
-
-                if (_NullifyValueIfUpdateTaskIsCancelled())
+                if (this.NullifyValueIfUpdateTaskIsCancelled())
+                {
                     return;
+                }
 
-                _node.SetValue(value);
+                this.node.SetValue(value);
 
-                if (_node.ValueChanged())
-                    _node.HandleValueChanged(value);
+                if (this.node.ValueChanged())
+                {
+                    this.node.HandleValueChanged(value);
+                }
 
-                _CancelFollowerTasksIfValueUpdated();
+                this.CancelFollowerTasksIfValueUpdated();
 
-                _logger.Debug($"{_node.T()} Update Task completed: {_updateTask?.Status.ToString()}");
+                Logger.Debug($"{this.node.T()} Update Task completed: {this.updateTask?.Status.ToString()}");
             }
             catch (AggregateException ae)
             {
-                _logger.Error($"Caught Task Error: {ae.Message}");
+                Logger.Error($"Caught Task Error: {ae.Message}");
             }
-
         }
 
-        private bool _NullifyValueIfUpdateTaskIsCancelled()
+        /// <summary>
+        /// Sets the current value of the <see cref="node"/> to null if its <see cref="updateTask"/> is cancelled.
+        /// </summary>
+        /// <returns>
+        /// true if <see cref="updateTask"/> is cancelled (and <see cref="node"/> value nullified), false if not.
+        /// </returns>
+        private bool NullifyValueIfUpdateTaskIsCancelled()
         {
-            if (!_updateTaskCTS.IsCancellationRequested)
+            if (!this.updateTaskCts.IsCancellationRequested)
+            {
                 return false;
+            }
 
-            _logger.Debug($"{_node.T()} Cancellation was requested. Resetting value to null. (a)");
-            _node.NullifyValueWithoutShiftingToPrevious();
+            Logger.Debug($"{this.node.T()} Cancellation was requested. Resetting value to null. (a)");
+
+            this.node.NullifyValueWithoutShiftingToPrevious();
 
             return true;
         }
 
         /// <summary>
-        /// This Node's value changed, meaning all follower node values are now
-        /// potentially expired, so issue a cancel to all follower update tasks.
+        /// This Node's value changed, meaning all follower node values are now potentially expired, so issue a cancel to all follower update tasks.
         /// </summary>
-        private void _CancelFollowerTasksIfValueUpdated()
+        private void CancelFollowerTasksIfValueUpdated()
         {
-            if (!_node.ValueChanged())
+            if (!this.node.ValueChanged())
             {
-                _logger.Debug($"{_node.T()} Value was same: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
+                Logger.Debug($"{this.node.T()} Value was same: ({this.node.GetPreviousValue()} -> {this.node.GetValue()}).");
             }
             else
             {
-                _logger.Debug($"{_node.T()} Value changed: ({_node.GetPreviousValue()} -> {_node.GetValue()}).");
+                Logger.Debug($"{this.node.T()} Value changed: ({this.node.GetPreviousValue()} -> {this.node.GetValue()}).");
 
-                HashSet<Node> toBeVisited = new HashSet<Node>();
+                var toBeVisited = new HashSet<Node>();
 
-                foreach (var follower in _node.Followers)
+                foreach (Node follower in this.node.Followers)
+                {
                     toBeVisited.Add(follower);
+                }
 
                 while (toBeVisited.Count > 0)
                 {
                     Node targetDescendent = toBeVisited.First();
                     toBeVisited.Remove(targetDescendent);
 
-                    _logger.Debug($"{_node.T()} Issuing cancel to follower {targetDescendent.T()}...");
-                    targetDescendent.TaskManager._CancelFollowerTasks();
+                    Logger.Debug($"{this.node.T()} Issuing cancel to follower {targetDescendent.T()}...");
+                    targetDescendent.TaskManager.CancelFollowerTasks();
 
                     // Check the StateAttribute of Node allowing toggle of "nullify value if any parent value changes", then conditionally check for it and run NullifyValueWithoutShiftingToPrevious() if true.
                     if (targetDescendent.IsStrictValue())
                     {
-                        _logger.Debug($"{targetDescendent.T()} Strict value TRUE. Nullifying value...");
+                        Logger.Debug($"{targetDescendent.T()} Strict value TRUE. Nullifying value...");
                         targetDescendent.NullifyValueWithoutShiftingToPrevious();
-
                     }
 
                     foreach (var follower in targetDescendent.Followers)
+                    {
                         toBeVisited.Add(follower);
-
-                    //_logger.Debug($"toBeVisited.Count: {toBeVisited.Count.ToString()}");
+                    }
                 }
             }
         }
 
-        private void _CancelFollowerTasks()
+        /// <summary>
+        /// Issues a cancel on the <see cref="CancellationTokenSource"/> of all follower-node update tasks.
+        /// </summary>
+        private void CancelFollowerTasks()
         {
-            // ToList is used to avoid error thrown in rare chance where a thread modifies the contents while another thread is enumerating
-            foreach (var cts_kv in _node.TaskManager._followerTaskCTSList.ToList())
+            // TODO: OPTIMIZE - Use lock instead of ToList() -- ToList is used to avoid error thrown in rare chance where a thread modifies the contents while another thread is enumerating
+            foreach (var ctsKv in this.node.TaskManager.followerTaskCtsList.ToList())
             {
-                CancellationTokenSource cts = cts_kv.Value;
+                CancellationTokenSource cts = ctsKv.Value;
 
                 if (cts is null)
+                {
                     return;
+                }
 
                 cts.Cancel();
             }
         }
 
-        private Task[] _GetPrecederUpdateTasks()
+        /// <summary>
+        /// Returns a list of the <see cref="updateTask"/>s for all immediate preceders of the <see cref="node"/> being managed.
+        /// </summary>
+        /// <returns>
+        /// Array of update tasks of nodes immediately preceding this node.
+        /// </returns>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+        private Task[] GetPrecederUpdateTasks()
         {
-            var preceders = _node.Preceders.ToArray();
-            var precederTasks = new Task[_node.Preceders.Count()];
+            var preceders = this.node.Preceders.ToArray();
+            var precederTasks = new Task[this.node.Preceders.Count()];
 
-            for (int i = 0; i < _node.Preceders.Count(); i++)
+            for (var i = 0; i < this.node.Preceders.Count(); i++)
             {
-                var preceder = preceders[i];
+                Node preceder = preceders[i];
 
                 if (preceder is null)
+                {
                     continue;
+                }
 
-                _logger.Debug($"{_node.T()} Requesting update from preceder: {preceder.GetType().ToString()}");
+                Logger.Debug($"{this.node.T()} Requesting update from preceder: {preceder.GetType()}");
                 precederTasks[i] = preceder.TaskManager.UpdateAsync();
             }
 
             return precederTasks;
-        }
-
-        internal TaskStatus GetUpdateTaskStatus()
-        {
-            if (_updateTask is null)
-            {
-                // TODO: REFACTOR - Something else like a custom UpdateTaskStatus class which extends TaskStatus but has a custom null status.
-                return TaskStatus.WaitingToRun;
-            }
-
-            return _updateTask.Status;
-        }
-
-        public void Dispose()
-        {
-            _updateTaskCTS.Dispose();
         }
     }
 }
