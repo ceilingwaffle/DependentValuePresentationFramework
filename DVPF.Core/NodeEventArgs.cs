@@ -1,5 +1,4 @@
-﻿
-namespace DVPF.Core
+﻿namespace DVPF.Core
 {
     using System;
 
@@ -25,6 +24,5 @@ namespace DVPF.Core
         /// Gets or sets the value of the <see cref="Node"/>
         /// </summary>
         public object Value { get; set; }
-
     }
 }
