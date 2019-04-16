@@ -55,7 +55,6 @@
         /// </summary>
         protected Node()
         {
-            // TODO: Remove underscore prefix for methods
             this.TaskManager = new NodeTaskManager(this);
             this.TaskManager.ResetUpdateTaskCTS();
             this.InitValueLedger();
@@ -473,7 +472,6 @@
         /// </returns>
         private Exception BuildExceptionForNodeBeingInitialized(Node node)
         {
-            // TODO: REFACTOR - Replace ArgumentException with custom Exception class for each potential invalid reason below (also replace in NodeTest.cs )
             if (InitializedNodes.Exists(node))
             {
                 return new ArgumentException(
