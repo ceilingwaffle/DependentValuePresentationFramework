@@ -80,9 +80,10 @@
         public NodeCollection Preceders { get; } = new NodeCollection();
 
         /// <summary>
-        /// Gets all <see cref="Node"/>s initialized within this application.
+        /// <para>Gets or sets a collection of all <see cref="Node"/>s initialized within this application.</para>
+        /// <para>Call <see cref="NodeSupervisor.ResetInitializedNodes"/> to empty this collection.</para>
         /// </summary>
-        internal static NodeCollection InitializedNodes { get; private set; } = new NodeCollection();
+        internal static NodeCollection InitializedNodes { get; set; } = new NodeCollection();
 
         /// <summary>
         /// <para>The method to be implemented to return a Task representing the calculated value of this node.</para>
@@ -287,14 +288,6 @@
 
             // to do: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Initializes a new empty <see cref="NodeCollection"/> and assigns it to <see cref="InitializedNodes"/>
-        /// </summary>
-        internal static void ResetInitializedNodes()
-        {
-            InitializedNodes = new NodeCollection();
         }
 
         /// <summary>

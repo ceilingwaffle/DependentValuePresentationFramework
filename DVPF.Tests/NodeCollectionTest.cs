@@ -20,7 +20,7 @@ namespace DVPF.Tests
         protected void SetUp()
         {
             _nodeCollection = new NodeCollection();
-            Node.ResetInitializedNodes();
+            NodeSupervisor.ResetInitializedNodes();
             Node.ResetNodeStatePropertyNames();
         }
 

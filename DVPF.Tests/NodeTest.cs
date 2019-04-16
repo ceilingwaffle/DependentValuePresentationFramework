@@ -16,7 +16,7 @@ namespace DVPF.Tests
         [SetUp]
         protected void SetUp()
         {
-            Node.ResetInitializedNodes();
+            NodeSupervisor.ResetInitializedNodes();
             Node.ResetNodeStatePropertyNames();
         }
 

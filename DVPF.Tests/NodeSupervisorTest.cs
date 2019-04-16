@@ -21,7 +21,7 @@ namespace DVPF.Tests
         protected void SetUp()
         {
             _nodeSupervisor = new NodeSupervisor();
-            Node.ResetInitializedNodes();
+            NodeSupervisor.ResetInitializedNodes();
             Node.ResetNodeStatePropertyNames();
         }
 
@@ -38,7 +38,7 @@ namespace DVPF.Tests
             var shouldNotBeEnabled = new DisabledStatePropertyNode();
 
             NodeCollection initializedNodes = Node.InitializedNodes;
-            NodeCollection enabledNodes = _nodeSupervisor._CollectEnabledNodes(initializedNodes);
+            NodeCollection enabledNodes = _nodeSupervisor.FilterEnabledNodes(initializedNodes);
 
             CollectionAssert.Contains(enabledNodes, shouldBeEnabled);
             CollectionAssert.DoesNotContain(enabledNodes, shouldNotBeEnabled);
@@ -65,7 +65,7 @@ namespace DVPF.Tests
         //    Earth.Precedes(HalleysComet);
 
         //    NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-        //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
+        //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "FilterRootNodes", initializedNodes);
 
         //    // expected
         //    var expectedRoots = new NodeCollection(LMC, MilkyWay, Andromeda);
@@ -103,8 +103,8 @@ namespace DVPF.Tests
 
         //    //_nodeSupervisor.AddRootNodes(LMC, MilkyWay, Andromeda);
         //    NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-        //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
-        //    NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
+        //    NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "FilterRootNodes", initializedNodes);
+        //    NodeCollection returnedLeaves = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "FilterLeafNodes", rootNodes);
 
         //    // expected
         //    var expectedLeaves = new NodeCollection(LMC, Jupiter, Oumuamua, HalleysComet);
@@ -170,8 +170,8 @@ namespace DVPF.Tests
         //        var rootNode = dynamicNodes[0];
         //        //_nodeSupervisor.AddRootNodes(rootNode);
         //        NodeCollection initializedNodes = Helpers.GetPrivateStaticProperty<NodeCollection, Node>("InitializedNodes");
-        //        NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectRootNodes", initializedNodes);
-        //        NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "_CollectLeafNodes", rootNodes);
+        //        NodeCollection rootNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "FilterRootNodes", initializedNodes);
+        //        NodeCollection leafNodes = Helpers.InvokePrivateMethod<NodeCollection>(_nodeSupervisor, "FilterLeafNodes", rootNodes);
 
         //        NodeCollection returnedLeaves = leafNodes;
         //    }

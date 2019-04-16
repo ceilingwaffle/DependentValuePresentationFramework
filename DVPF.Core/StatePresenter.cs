@@ -155,7 +155,7 @@ namespace DVPF.Core
             _logger.Debug("------------------------------------------------------");
 
             //var leafNodes = NodeSupervisor.LeafNodes;
-            var presentationEnabledNodes = NodeSupervisor.GetEnabledNodes();
+            var presentationEnabledNodes = NodeSupervisor.EnabledNodes;
 
             var tasks = new List<Task>();
 

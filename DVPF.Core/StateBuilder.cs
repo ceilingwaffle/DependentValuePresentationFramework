@@ -17,7 +17,7 @@ namespace DVPF.Core
 
         internal State Build()
         {
-            NodeCollection nodes = _nodeSupervisor.GetEnabledNodes();
+            NodeCollection nodes = _nodeSupervisor.EnabledNodes;
 
             var state = new State();
 
