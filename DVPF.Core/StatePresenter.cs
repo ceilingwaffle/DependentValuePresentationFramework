@@ -9,7 +9,9 @@ namespace DVPF.Core
 {
     // TODO: REFACTOR - Make code styling choices consistent across classes (e.g. underscore prefixes) - use a C# linter or something...
 
-    // TODO: REFACTOR - Comment all publically accessible methods and fields.
+    // TODO: REFACTOR - Comment all publicly accessible methods and fields.
+
+    // TODO: REFACTOR - Use Stylecop to enforce a maximum number of characters per line
 
     public class StatePresenter
     {
