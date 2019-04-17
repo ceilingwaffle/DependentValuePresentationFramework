@@ -1,34 +1,50 @@
-﻿using System;
-
-namespace DVPF.Core
+﻿namespace DVPF.Core
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+
+    /// <inheritdoc />
+    /// <summary>
+    /// Optionally applied as an attribute on a derived <seealso cref="Node" /> class to present that node's value as a property of the <seealso cref="State" />.
+    /// </summary>
     public class StatePropertyAttribute : Attribute
     {
+        /// <inheritdoc />
         /// <summary>
-        /// Whether or not this node's value is to be included as a property of <see cref="State"/>
+        /// Initializes a new instance of the <see cref="StatePropertyAttribute" /> class.
         /// </summary>
-        internal bool Enabled { get; private set; } = false;
-
-        internal string Name { get; private set; } = null;
-
-        /// <summary>
-        /// <para>Set to true if the target <see cref="Node"/>'s value should be set to null if any parent value changes.</para>
-        /// <para>See <seealso cref="Node.NullifyValueWithoutShiftingToPrevious"/></para>
-        /// </summary>
-        internal bool StrictValue { get; private set; } = false;
-
-        /// <summary>
-        /// Determines how the value of a Node is presented to the State.
-        /// </summary>
-        /// <param name="enabled">If true, this Node's value will be included on the State.</param>
-        /// <param name="name">The property name of this Node's value on the State.</param>
-        /// <param name="strictValue">If true, all preceder Node values must be "up to date", otherwise this Node's value will be set to null on the State.</param>
+        /// <param name="enabled">
+        /// See <seealso cref="P:DVPF.Core.StatePropertyAttribute.Enabled" />
+        /// </param>
+        /// <param name="name">
+        /// See <seealso cref="P:DVPF.Core.StatePropertyAttribute.Name" />
+        /// </param>
+        /// <param name="strictValue">
+        /// See <seealso cref="P:DVPF.Core.StatePropertyAttribute.StrictValue" />
+        /// </param>
         public StatePropertyAttribute(bool enabled, string name, bool strictValue = false)
         {
-            Enabled = enabled;
-            Name = name;
-            StrictValue = strictValue;
+            this.Enabled = enabled;
+            this.Name = name;
+            this.StrictValue = strictValue;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the value of the <seealso cref="Node"/> is to be included as a property of the <see cref="State"/>.
+        /// </summary>
+        internal bool Enabled { get; }
+
+        /// <summary>
+        /// Gets the name of the property to be included as the key name of <seealso cref="State.Properties"/>.
+        /// </summary>
+        internal string Name { get; }
+
+        /// <summary>
+        /// <para>Gets a value indicating whether the value of the target <see cref="Node"/> should be set to null as soon as any parent value changes.</para>
+        /// <para>This is used to prevent a follower-node's value existing whose value is based on old values from preceder-nodes.</para>
+        /// <para>See also: <seealso cref="Node.NullifyValueWithoutShiftingToPrevious"/></para>
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+        internal bool StrictValue { get; }
     }
 }
