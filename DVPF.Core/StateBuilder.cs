@@ -1,34 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DVPF.Core
+﻿namespace DVPF.Core
 {
+    /// <summary>
+    /// Builder of the <seealso cref="State"/>.
+    /// </summary>
     internal class StateBuilder
     {
-        private readonly NodeSupervisor _nodeSupervisor;
+        /// <summary>
+        /// Used for accessing nodes whose values will be used as <seealso cref="State"/> properties.
+        /// </summary>
+        private readonly NodeSupervisor nodeSupervisor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StateBuilder"/> class.
+        /// </summary>
+        /// <param name="nodeSupervisor">
+        /// The instance of <seealso cref="NodeSupervisor"/> for <seealso cref="nodeSupervisor"/>.
+        /// </param>
         public StateBuilder(NodeSupervisor nodeSupervisor)
         {
-            _nodeSupervisor = nodeSupervisor;
+            this.nodeSupervisor = nodeSupervisor;
         }
 
+        /// <summary>
+        /// Builds the <seealso cref="State"/> containing properties from each enabled <seealso cref="Node"/>.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="State"/>.
+        /// </returns>
         internal State Build()
         {
-            NodeCollection nodes = _nodeSupervisor.EnabledNodes;
+            NodeCollection nodes = this.nodeSupervisor.EnabledNodes;
 
             var state = new State();
 
             // build a State containing every node value
-            foreach (var node in nodes)
+            foreach (Node node in nodes)
             {
-                if (! node.IsEnabled())
+                if (!node.IsEnabled())
                 {
                     continue;
                 }
-                
+
                 // only include this node's property name on the state if the name is defined
                 StatePropertyAttribute statePropertyAttribute = node.GetStatePropertyAttribute();
 
