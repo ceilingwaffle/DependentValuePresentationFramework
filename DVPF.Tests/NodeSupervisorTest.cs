@@ -10,7 +10,7 @@
     /// Tests for <see cref="NodeSupervisor"/>
     /// </summary>
     [TestFixture]
-    public class NodeSupervisorTest
+    internal class NodeSupervisorTest
     {
         /// <summary>
         /// The node supervisor.

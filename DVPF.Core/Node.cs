@@ -418,11 +418,18 @@
         /// </returns>
         private bool IsValidStatePropertyName()
         {
-            var statePropertyAttribute = this.GetStatePropertyAttribute();
+            StatePropertyAttribute statePropertyAttribute = this.GetStatePropertyAttribute();
 
-            if (statePropertyAttribute?.Name is null)
+            // Declaring StatePropertyAttribute is optional, so it's a valid name if one is not defined.
+            if (statePropertyAttribute is null)
             {
                 return true;
+            }
+
+            // If StatePropertyAttribute is declared as a Node attribute, but name is null, then the name is invalid.
+            if (statePropertyAttribute?.Name is null)
+            {
+                return false;
             }
 
             return !string.IsNullOrWhiteSpace(statePropertyAttribute.Name);

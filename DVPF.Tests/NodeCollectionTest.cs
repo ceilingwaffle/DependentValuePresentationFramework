@@ -9,7 +9,7 @@
     /// Tests for <see cref="NodeCollection"/>
     /// </summary>
     [TestFixture]
-    public class NodeCollectionTest
+    internal class NodeCollectionTest
     {
         /// <summary>
         /// The node collection.
