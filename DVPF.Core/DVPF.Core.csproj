@@ -40,9 +40,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.6.1" />
-    <PackageReference Include="NLog.Config" Version="4.6.1" />
-    <PackageReference Include="NLog.Schema" Version="4.6.1" />
+    <PackageReference Include="NLog" Version="4.6.2" />
+    <PackageReference Include="NLog.Config" Version="4.6.2" />
+    <PackageReference Include="NLog.Schema" Version="4.6.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="obj\x64\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />

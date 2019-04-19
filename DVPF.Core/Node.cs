@@ -263,7 +263,7 @@
         /// <summary>
         /// Compares the current value of this node against the previous value. Note: Always false if either the current or previous value is null.
         /// </summary>
-        /// <returns>false if the current value is null. false if the previous value is null. false if the current value is different to the previous value. otherwise true</returns>
+        /// <returns>false if the current value is null. false if the previous value is null. false if the current value is different to the previous value, otherwise true</returns>
         public bool ValueChanged()
         {
             var current = this.GetPreviousValue(0);
@@ -427,7 +427,7 @@
             }
 
             // If StatePropertyAttribute is declared as a Node attribute, but name is null, then the name is invalid.
-            if (statePropertyAttribute?.Name is null)
+            if (statePropertyAttribute.Name is null)
             {
                 return false;
             }
