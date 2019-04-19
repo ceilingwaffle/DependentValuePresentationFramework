@@ -1,18 +1,24 @@
-﻿using DVPF.Tests.Nodes;
-
-namespace DVPF.Tests
+﻿namespace DVPF.Tests
 {
     using System;
     using System.Threading.Tasks;
-    using NUnit.Framework;
-    using DVPF.Core;
-    using Tests.Nodes;
 
+    using DVPF.Core;
+    using DVPF.Tests.Nodes;
+
+    using NUnit.Framework;
+
+    /// <summary>
+    /// Tests for class <see cref="Node"/>
+    /// </summary>
     [TestFixture]
     public class NodeTest
     {
         // TODO: Write test for ensuring disabled nodes do not call their CalculateValue() methods
 
+        /// <summary>
+        /// The set up.
+        /// </summary>
         [SetUp]
         protected void SetUp()
         {
@@ -20,6 +26,9 @@ namespace DVPF.Tests
             Node.ResetNodeStatePropertyNames();
         }
 
+        /// <summary>
+        /// The clean up.
+        /// </summary>
         [TearDown]
         protected void CleanUp()
         {

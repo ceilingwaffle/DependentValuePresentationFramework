@@ -1,69 +1,80 @@
-﻿using System;
-using DVPF.Tests.Nodes;
-
-namespace DVPF.Tests
+﻿namespace DVPF.Tests
 {
-    using NUnit.Framework;
+    using System;
     using DVPF.Core;
+    using NUnit.Framework;
     using Tests.Nodes;
 
+    /// <summary>
+    /// Tests for <see cref="NodeCollection"/>
+    /// </summary>
     [TestFixture]
     public class NodeCollectionTest
     {
-        private NodeCollection _nodeCollection;
+        /// <summary>
+        /// The node collection.
+        /// </summary>
+        private NodeCollection nodeCollection;
 
         /// <summary>
         /// Initializes Node test objects
         /// </summary>
-        /// 
         [SetUp]
-        protected void SetUp()
+        public void SetUp()
         {
-            _nodeCollection = new NodeCollection();
+            this.nodeCollection = new NodeCollection();
             NodeSupervisor.ResetInitializedNodes();
             Node.ResetNodeStatePropertyNames();
         }
 
+        /// <summary>
+        /// The clean up.
+        /// </summary>
         [TearDown]
-        protected void CleanUp()
+        public void CleanUp()
         {
-
         }
 
+        /// <summary>
+        /// Assert <see cref="NodeCollection.Count"/> correctly reflects the total number of <see cref="Node"/>s added.
+        /// </summary>
         [Test]
         public void TestCount()
         {
             // test 0 nodes added
-            Assert.AreEqual(_nodeCollection.Count(), 0);
+            Assert.AreEqual(this.nodeCollection.Count(), 0);
 
             // test 1 nodes added
             var lmc = new LMC();
-            _nodeCollection.Add(lmc);
-            Assert.AreEqual(_nodeCollection.Count(), 1);
+            this.nodeCollection.Add(lmc);
+            Assert.AreEqual(this.nodeCollection.Count(), 1);
 
             // test 2 nodes added
             var milkyWay = new MilkyWay();
-            _nodeCollection.Add(milkyWay);
-            Assert.AreEqual(_nodeCollection.Count(), 2);
+            this.nodeCollection.Add(milkyWay);
+            Assert.AreEqual(this.nodeCollection.Count(), 2);
 
             // adding a follower should not increase collection count
             var solarSystem = new SolarSystem();
             milkyWay.Precedes(solarSystem);
-            Assert.AreEqual(_nodeCollection.Count(), 2);
+            Assert.AreEqual(this.nodeCollection.Count(), 2);
         }
 
+        /// <summary>
+        /// Assert same <see cref="Node"/> not added twice.
+        /// </summary>
         [Test]
         public void TestExceptionThrownWhenSameNodeAddedTwice()
         {
             var milkyWay = new MilkyWay();
-            Assert.AreEqual(_nodeCollection.Count(), 0);
+            Assert.AreEqual(this.nodeCollection.Count(), 0);
 
-            _nodeCollection.Add(milkyWay);
-            Assert.AreEqual(_nodeCollection.Count(), 1);
+            this.nodeCollection.Add(milkyWay);
+            Assert.AreEqual(this.nodeCollection.Count(), 1);
 
             try
             {
-                _nodeCollection.Add(milkyWay);
+                this.nodeCollection.Add(milkyWay);
             }
             catch (ArgumentException)
             {
@@ -73,19 +84,22 @@ namespace DVPF.Tests
             Assert.Fail("Expected ArgumentException (attempted to add same node twice).");
         }
 
+        /// <summary>
+        /// Assert <see cref="Node"/> of same type not added twice.
+        /// </summary>
         [Test]
         public void TestExceptionThrownWhenNodeOfSameTypeAddedTwice()
         {
             var milkyWay1 = new MilkyWay();
-            Assert.AreEqual(_nodeCollection.Count(), 0);
+            Assert.AreEqual(this.nodeCollection.Count(), 0);
 
-            _nodeCollection.Add(milkyWay1);
-            Assert.AreEqual(_nodeCollection.Count(), 1);
+            this.nodeCollection.Add(milkyWay1);
+            Assert.AreEqual(this.nodeCollection.Count(), 1);
 
             try
             {
                 var milkyWay2 = new MilkyWay();
-                _nodeCollection.Add(milkyWay2);
+                this.nodeCollection.Add(milkyWay2);
             }
             catch (ArgumentException)
             {
@@ -95,6 +109,9 @@ namespace DVPF.Tests
             Assert.Fail("Expected ArgumentException (attempted to add node of same type twice).");
         }
 
+        /// <summary>
+        /// Assertions for method <see cref="NodeCollection.Exists"/>
+        /// </summary>
         [Test]
         public void TestExists()
         {
@@ -110,5 +127,4 @@ namespace DVPF.Tests
             Assert.IsTrue(coll.Exists(milkyWay));
         }
     }
-
 }
