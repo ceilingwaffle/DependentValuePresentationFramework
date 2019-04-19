@@ -1,6 +1,8 @@
 ﻿namespace DVPF.Tests
 {
     using DVPF.Core;
+    using DVPF.Tests.NodeTestClasses;
+
     using NUnit.Framework;
     using CollectionAssert = NUnit.Framework.CollectionAssert;
 

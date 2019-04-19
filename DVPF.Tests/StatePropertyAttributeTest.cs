@@ -4,6 +4,8 @@ using DVPF.Core;
 
 namespace DVPF.Tests
 {
+    using DVPF.Tests.NodeTestClasses;
+
     [TestFixture]
     class StatePropertyAttributeTest
     {

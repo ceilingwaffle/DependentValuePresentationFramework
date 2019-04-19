@@ -1,10 +1,11 @@
 ﻿namespace DVPF.Tests
 {
     using System;
-    using System.Threading.Tasks;
+    using System.Diagnostics.CodeAnalysis;
 
     using DVPF.Core;
     using DVPF.Tests.Nodes;
+    using DVPF.Tests.NodeTestClasses;
 
     using NUnit.Framework;
 
@@ -20,7 +21,7 @@
         /// The set up.
         /// </summary>
         [SetUp]
-        protected void SetUp()
+        public void SetUp()
         {
             NodeSupervisor.ResetInitializedNodes();
             Node.ResetNodeStatePropertyNames();
@@ -30,14 +31,14 @@
         /// The clean up.
         /// </summary>
         [TearDown]
-        protected void CleanUp()
+        public void CleanUp()
         {
-
         }
 
         /// <summary>
-        /// Tests preceder has follower
+        /// Tests preceder has follower.
         /// </summary>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         [Test]
         public void TestFollowerOfPreceder()
         {
@@ -55,8 +56,9 @@
         }
 
         /// <summary>
-        /// Tests follower has preceder
+        /// Tests follower has preceder.
         /// </summary>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         [Test]
         public void TestPrecederOfFollower()
         {
@@ -73,6 +75,9 @@
             Assert.AreSame(solarSystemPreceder, milkyWay);
         }
 
+        /// <summary>
+        /// Test for method <see cref="Node.HasFollowers"/>
+        /// </summary>
         [Test]
         public void TestHasFollowersMethod()
         {
@@ -86,6 +91,9 @@
             Assert.IsTrue(milkyWay.HasFollowers());
         }
 
+        /// <summary>
+        /// Test for method <see cref="Node.HasPreceders"/>
+        /// </summary>
         [Test]
         public void TestHasPrecedersMethod()
         {
@@ -99,14 +107,17 @@
             Assert.IsTrue(solarSystem.HasPreceders());
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when initializing two nodes of same type.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_InitializingTwoNodesOfSameType()
+        public void TestExceptionThrownWhenInitializingTwoNodesOfSameType()
         {
-            var milkyWay1 = new MilkyWay();
+            var dummy1 = new MilkyWay();
 
             try
             {
-                var milkyWay2 = new MilkyWay();
+                var dummy2 = new MilkyWay();
             }
             catch (ArgumentException)
             {
@@ -116,8 +127,11 @@
             Assert.Fail("Expected ArgumentException (initializing the same node types should not be allowed.");
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when making Node A follow Node B, then making Node B precede Node A.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_CallingRedundantPrecedeAfterFollow()
+        public void TestExceptionThrownWhenCallingRedundantPrecedeAfterFollow()
         {
             var milkyWay = new MilkyWay();
             var solarSystem = new SolarSystem();
@@ -135,11 +149,13 @@
 
             Assert.Fail("Expected ArgumentException (attempted to assign node relationship twice " +
                         "-- redundant call to b.Precedes(a) when already called a.Follows(b).");
-
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when making Node A precede Node B, then making Node B follow Node A.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_CallingRedundantFollowAfterPrecede()
+        public void TestExceptionThrownWhenCallingRedundantFollowAfterPrecede()
         {
             var milkyWay = new MilkyWay();
             var solarSystem = new SolarSystem();
@@ -157,11 +173,13 @@
 
             Assert.Fail("Expected ArgumentException (attempted to assign node relationship twice " +
                         "-- redundant call to a.Follows(b) when already called b.Precedes(a)).");
-
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when a node attempts to follow itself.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_NodeFollowsItself()
+        public void TestExceptionThrownWhenNodeFollowsItself()
         {
             var solarSystem = new SolarSystem();
 
@@ -177,10 +195,12 @@
             Assert.Fail("Excepted Exception (node cannot follow itself).");
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when a node attempts to follow a null object.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_NodeFollowsNullNode()
+        public void TestExceptionThrownWhenNodeFollowsNullNode()
         {
-
             var solarSystem = new SolarSystem();
 
             try
@@ -195,8 +215,11 @@
             Assert.Fail("Excepted ArgumentException (node cannot follow a null node).");
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when a node attempts to precede itself.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_NodePrecedesItself()
+        public void TestExceptionThrownWhenNodePrecedesItself()
         {
             var solarSystem = new SolarSystem();
 
@@ -212,10 +235,12 @@
             Assert.Fail("Excepted Exception (node cannot precede itself).");
         }
 
+        /// <summary>
+        /// Asserts that an exception is thrown when a node attempts to precede a null object.
+        /// </summary>
         [Test]
-        public void TestExceptionThrown_NodePrecedesNullNode()
+        public void TestExceptionThrownWhenNodePrecedesNullNode()
         {
-
             var solarSystem = new SolarSystem();
 
             try
@@ -230,67 +255,4 @@
             Assert.Fail("Excepted ArgumentException (node cannot precede a null node).");
         }
     }
-
-    [StateProperty(enabled: true, name: "PropertyName")]
-    class ValidEnabledStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    [StateProperty(enabled: true, name: "PropertyName")]
-    class DuplicateNameStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    [StateProperty(enabled: true, name: "")]
-    internal class EmptyStringNameStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    [StateProperty(enabled: true, name: "  ")]
-    internal class WhiteSpaceNameStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    [StateProperty(enabled: true, name: null)]
-    internal class NullNameStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    [StateProperty(enabled: false, name: "HopefullyNotEnabled")]
-    internal class DisabledStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    internal class AttributeNotDefinedStatePropertyNode : Node
-    {
-        public override Task<object> DetermineValueAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
 }
