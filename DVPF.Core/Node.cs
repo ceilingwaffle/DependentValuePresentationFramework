@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Threading.Tasks;
@@ -49,6 +50,8 @@
         /// <seealso cref="Dispose"/>
         /// </summary>
         private bool disposedValue;
+
+        private bool hasCustomStatePropertyAttributeDefined = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Node"/> class.
@@ -245,7 +248,51 @@
         /// </returns>
         public bool IsEnabled()
         {
-            return this.GetStatePropertyAttribute()?.Enabled == true;
+            StatePropertyAttribute spa = this.GetStatePropertyAttribute();
+
+            if (spa == null)
+            {
+                return false;
+            }
+
+            return spa.Enabled == true;
+        }
+
+        public void EnablePresentation()
+        {
+            // TODO: Write unit test
+            // TODO: Create the SPA (with Enabled=true) if one is not defined, instead of throwing an exception
+            StatePropertyAttribute spa = null;
+            try
+            {
+                spa = GetStatePropertyAttribute(throwExceptionIfNotDefined: true);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Cannot enable a node with no StatePropertyAttribute defined. {e.Message}");
+            }
+
+            if (!this.IsValidStatePropertyName(spa))
+            {
+                throw new Exception("Cannot enable a node with an invalid/no name StatePropertyAttribute property defined.");
+            }
+
+            spa.Enabled = true;
+        }
+
+        public void DisablePresentation()
+        {
+            // TODO: Write unit test
+            // TODO: Create the SPA (with Enabled=false) if one is not defined, instead of throwing an exception
+            StatePropertyAttribute spa = GetStatePropertyAttribute();
+
+            // SPA is not defined, therefore do nothing since presentation is already disabled by default
+            if (spa is null)
+            {
+                return;
+            }
+
+            spa.Enabled = false;
         }
 
         /// <summary>
@@ -309,15 +356,25 @@
             this.OnValueChange(this, new NodeEventArgs(value));
         }
 
+
         /// <summary>
         /// Gets the <see cref="StatePropertyAttribute"/> for this node.
         /// </summary>
         /// <returns>
         /// The <see cref="StatePropertyAttribute"/> for this node..
         /// </returns>
-        internal StatePropertyAttribute GetStatePropertyAttribute()
+        internal StatePropertyAttribute GetStatePropertyAttribute(bool throwExceptionIfNotDefined = false)
         {
-            return (StatePropertyAttribute)Attribute.GetCustomAttribute(this.GetType(), typeof(StatePropertyAttribute));
+            var attr = TypeDescriptor.GetAttributes(this.GetType());
+            var ofType = attr.OfType<StatePropertyAttribute>();
+            var spa = ofType.FirstOrDefault();
+
+            if (throwExceptionIfNotDefined && spa == null)
+            {
+                throw new Exception($"You must define a StatePropertyAttribute for Node {this.GetType()}.");
+            }
+
+            return spa;
         }
 
         /// <summary>
@@ -416,10 +473,8 @@
         /// <para>true if valid</para>
         /// <para>false if invalid</para>
         /// </returns>
-        private bool IsValidStatePropertyName()
+        private bool IsValidStatePropertyName(StatePropertyAttribute statePropertyAttribute)
         {
-            StatePropertyAttribute statePropertyAttribute = this.GetStatePropertyAttribute();
-
             // Declaring StatePropertyAttribute is optional, so it's a valid name if one is not defined.
             if (statePropertyAttribute is null)
             {
@@ -478,14 +533,20 @@
                     $"Node of type {node.GetType()} already initialized. Only one node of each node type is allowed.");
             }
 
+            var statePropertyAttribute = this.GetStatePropertyAttribute();
+
+            // Defining a StatePropertyAttribute is optional, so do not throw an exception for the default SPA properties
+            if (statePropertyAttribute is null)
+            {
+                return null;
+            }
+
             // StatePropertyName must be unique to each node
-            if (!this.IsValidStatePropertyName())
+            if (!this.IsValidStatePropertyName(statePropertyAttribute))
             {
                 return new ArgumentException(
                     $"StatePropertyName of node {node.GetType()} is invalid (must not be null, empty, or whitespace).");
             }
-
-            var statePropertyAttribute = this.GetStatePropertyAttribute();
 
             if (statePropertyAttribute?.Name != null && nodeStatePropertyNames.Contains(statePropertyAttribute.Name))
             {

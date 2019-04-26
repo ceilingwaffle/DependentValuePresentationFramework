@@ -179,7 +179,7 @@
         /// </param>
         private static void ExceptionLogHandler(object source, FirstChanceExceptionEventArgs e)
         {
-            Logger.Error($"\n\tError: '{e.Exception.Message}' thrown in '{source.GetType()}: {e.Exception.StackTrace}'\n");
+            Logger.Error($"\n\tError: '{e.Exception.Message}' thrown in '{source?.GetType()}: {e.Exception.StackTrace}'\n");
         }
 
         /// <summary>

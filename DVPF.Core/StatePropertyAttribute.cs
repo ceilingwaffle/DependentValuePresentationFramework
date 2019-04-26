@@ -32,12 +32,12 @@
         /// <summary>
         /// Gets a value indicating whether the value of the <seealso cref="Node"/> is to be included as a property of the <see cref="State"/>.
         /// </summary>
-        internal bool Enabled { get; }
+        internal bool Enabled { get; set; } = false;
 
         /// <summary>
         /// Gets the name of the property to be included as the key name of <seealso cref="State.Properties"/>.
         /// </summary>
-        internal string Name { get; }
+        internal string Name { get; set; } = String.Empty;
 
         /// <summary>
         /// <para>Gets a value indicating whether the value of the target <see cref="Node"/> should be set to null as soon as any parent value changes.</para>
@@ -45,6 +45,6 @@
         /// <para>See also: <seealso cref="Node.NullifyValueWithoutShiftingToPrevious"/></para>
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
-        internal bool StrictValue { get; }
+        internal bool StrictValue { get; set; } = false;
     }
 }
