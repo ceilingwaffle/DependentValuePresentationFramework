@@ -49,7 +49,7 @@
                     continue;
                 }
 
-                // TODO: Can we cast this as a specific type, with the type defined in StatePropertyAttribute on each Node?
+                // TODO: UNFINISHED - Can we cast this as a specific type, with the type defined in StatePropertyAttribute on each Node?
                 state[statePropertyAttribute.Name] = node.GetValue();
             }
 

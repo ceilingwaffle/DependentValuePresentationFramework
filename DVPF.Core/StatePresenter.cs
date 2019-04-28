@@ -193,7 +193,7 @@
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         private ITargetBlock<DateTimeOffset> CreateScannerInfiniteLoopTask(Func<DateTimeOffset, CancellationToken, Task> action, CancellationToken cancellationToken)
         {
-            // TODO: Look into using a BackgroundWorker instead of ActionBlock
+            // TODO: REFACTOR - Look into using a BackgroundWorker instead of ActionBlock
 
             // Validate parameters.
             if (action == null)
@@ -276,6 +276,7 @@
 
             try
             {
+                // TODO - OPTIMIZE - Problem: One node task can still delay the entire scanner task. Solution: Use the previous node value if the node task did not complete in time during the scanner inerval.Use the most recent value only after the node task completes.
                 await Task.WhenAny(tasks);
             }
             catch (AggregateException ae)
